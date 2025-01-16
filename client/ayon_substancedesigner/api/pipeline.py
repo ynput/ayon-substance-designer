@@ -68,12 +68,10 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         # self._deregister_callbacks()
 
     def workfile_has_unsaved_changes(self):
-        pkg_mgr = package_manager()
-        for package in pkg_mgr.getUserPackages():
-            if package.isModified():
-                return True
-            else:
-                return False
+        package = get_package_from_current_graph()
+        if not package:
+            return False
+        return package.isModified()
 
     def get_workfile_extensions(self):
         return [".sbs", ".sbsar", ".sbsasm"]
