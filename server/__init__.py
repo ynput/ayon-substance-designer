@@ -2,7 +2,7 @@ from typing import Type
 
 from ayon_server.addons import BaseServerAddon
 
-from .settings import SubstanceDesignerSettings, DEFAULT_SD_VALUES
+from .settings import SubstanceDesignerSettings, DEFAULT_SD_SETTINGS
 
 
 class SubstanceDesignerAddon(BaseServerAddon):
@@ -10,4 +10,4 @@ class SubstanceDesignerAddon(BaseServerAddon):
 
     async def get_default_settings(self):
         settings_model_cls = self.get_settings_model()
-        return settings_model_cls(**DEFAULT_SD_VALUES)
+        return settings_model_cls(**DEFAULT_SD_SETTINGS)
