@@ -1,7 +1,7 @@
 from ayon_server.settings import BaseSettingsModel
 
-DEFAULT_VALUES = {}
+DEFAULT_SD_VALUES = {}
 
 
-class MySettings(BaseSettingsModel):
+class SubstanceDesignerSettings(BaseSettingsModel):
     pass
