@@ -1,10 +1,10 @@
 import sd
 import json
 import ast
+import contextlib
 
 from sd.api.sdapiobject import APIException
 from sd.api.sdvalueserializer import SDValueSerializer
-
 
 
 def package_manager():
@@ -43,25 +43,25 @@ def get_package_from_current_graph():
     return current_graph.getPackage()
 
 
-def set_sd_metadata(metadata_type: str, metadata: dict):
+def set_sd_metadata(metadata_type: str, metadata):
     """Set AYON-related metadata in Substance Painter
 
     Args:
         metadata_type (str): AYON metadata key
-        metadata (dict): AYON-related metadata
+        metadata (dict/list): AYON-related metadata
     """
     # Need to convert dict to string first
     target_package = get_package_from_current_graph()
-    existing_container_data = parsing_sd_data_to_dict(target_package, metadata_type)
-    if existing_container_data:
-        metadata.update(existing_container_data)
-    metadata_to_str = f"{json.dumps(metadata)}"
+    if isinstance(metadata, list):
+        metadata_to_str = f"{metadata}"
+    else:
+        metadata_to_str = f"{json.dumps(metadata)}"
     metadata_value = sd.api.sdvaluestring.SDValueString.sNew(metadata_to_str)
     package_metadata_dict = target_package.getMetadataDict()
     package_metadata_dict.setPropertyValueFromId(metadata_type, metadata_value)
 
 
-def parsing_sd_data_to_dict(target_package, metadata_type: str):
+def parsing_sd_data(target_package, metadata_type: str, is_dictionary=True):
     """Parse and convert Subsatnce Designer SDValue data to dictionary
 
     Args:
@@ -69,17 +69,14 @@ def parsing_sd_data_to_dict(target_package, metadata_type: str):
         metadata_type (str): Ayon metadata type
 
     Returns:
-        dict: metadata dict
+        dict/list: metadata dict
     """
-    metadata_dict = {}
+    metadata = {} if is_dictionary else []
     package_metadata_dict = target_package.getMetadataDict()
-    try:
+    with contextlib.suppress(APIException):
         metadata_sd_value = package_metadata_dict.getPropertyValueFromId(
             metadata_type)
         metadata_value = SDValueSerializer.sToString(metadata_sd_value)
-        metadata_dict = ast.literal_eval(metadata_value, "{}")
+        metadata = ast.literal_eval(str(metadata_value))
 
-    except APIException:
-        pass
-
-    return metadata_dict
+    return metadata

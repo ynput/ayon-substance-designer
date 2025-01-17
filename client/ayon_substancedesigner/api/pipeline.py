@@ -23,7 +23,7 @@ from .lib import (
     qt_ui_manager,
     get_package_from_current_graph,
     set_sd_metadata,
-    parsing_sd_data_to_dict
+    parsing_sd_data
 )
 
 
@@ -103,13 +103,12 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     def get_containers(self):
         current_package = get_package_from_current_graph()
         if not current_package:
-            return
+            return []
 
-        containers = parsing_sd_data_to_dict(
-            current_package, AYON_METADATA_CONTAINERS_KEY)
-        if containers:
-            for container in containers.values():
-                yield container
+        return parsing_sd_data(
+            current_package, AYON_METADATA_CONTAINERS_KEY,
+            is_dictionary=False
+        )
 
     def update_context_data(self, data, changes):
         current_package = get_package_from_current_graph()
@@ -121,9 +120,9 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     def get_context_data(self):
         current_package = get_package_from_current_graph()
         if not current_package:
-            return
+            return {}
 
-        return parsing_sd_data_to_dict(current_package, AYON_METADATA_CONTEXT_KEY) or {}
+        return parsing_sd_data(current_package, AYON_METADATA_CONTEXT_KEY) or {}
 
 
     def _install_menu(self):
@@ -182,7 +181,7 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         self.menu = None
 
 
-def imprint(name, namespace, context, loader, suffix="_CON"):
+def imprint(current_package, name, namespace, context, loader, identifier, options=None):
     """Imprint a loaded container with metadata.
 
     Containerisation enables a tracking of version, author and origin
@@ -193,6 +192,8 @@ def imprint(name, namespace, context, loader, suffix="_CON"):
         namespace (str): Namespace under which to host container
         context (dict): Asset information
         loader (load.LoaderPlugin): loader instance used to produce container.
+        identifier(str): SDResource identifier
+        options(dict): options
 
     Returns:
         None
@@ -206,12 +207,24 @@ def imprint(name, namespace, context, loader, suffix="_CON"):
         "loader": str(loader.__class__.__name__),
         "representation": context["representation"]["id"],
         "project_name": context["project"]["name"],
-        "objectName": f"{namespace}:{name}_{suffix}" if namespace else f"{name}_{suffix}",
-        "target_package": get_package_from_current_graph()
+        "objectName": identifier
     }
-    set_sd_metadata(AYON_METADATA_CONTAINERS_KEY, data)
+    if options:
+        for key, value in options:
+            data[key] = value
+    container_data = parsing_sd_data(
+        current_package, AYON_METADATA_CONTAINERS_KEY, is_dictionary=False)
+    container_data.append(data)
+    set_sd_metadata(AYON_METADATA_CONTAINERS_KEY, container_data)
+
 
 def remove_container_metadata(container):
     """Helper method to remove the data for a specific container"""
-    metadata = parsing_sd_data_to_dict(
-        container["target_package"], AYON_METADATA_CONTAINERS_KEY)
+    current_package = get_package_from_current_graph()
+    all_container_metadata = parsing_sd_data(
+        current_package, AYON_METADATA_CONTAINERS_KEY, is_dictionary=False)
+    metadata_remainder = [
+        container_data for container_data in all_container_metadata
+        if container_data["objectName"] != container["objectName"]
+    ]
+    set_sd_metadata(AYON_METADATA_CONTAINERS_KEY, metadata_remainder)
