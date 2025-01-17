@@ -2,9 +2,6 @@ import sd
 import json
 import ast
 
-import six
-
-import contextlib
 from sd.api.sdapiobject import APIException
 from sd.api.sdvalueserializer import SDValueSerializer
 
@@ -54,9 +51,12 @@ def set_sd_metadata(metadata_type: str, metadata: dict):
         metadata (dict): AYON-related metadata
     """
     # Need to convert dict to string first
+    target_package = get_package_from_current_graph()
+    existing_container_data = parsing_sd_data_to_dict(target_package, metadata_type)
+    if existing_container_data:
+        metadata.update(existing_container_data)
     metadata_to_str = f"{json.dumps(metadata)}"
     metadata_value = sd.api.sdvaluestring.SDValueString.sNew(metadata_to_str)
-    target_package = get_package_from_current_graph()
     package_metadata_dict = target_package.getMetadataDict()
     package_metadata_dict.setPropertyValueFromId(metadata_type, metadata_value)
 

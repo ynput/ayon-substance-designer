@@ -12,7 +12,8 @@ from ayon_core.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
 
 from ayon_core.pipeline import (
     register_creator_plugin_path,
-    register_loader_plugin_path
+    register_loader_plugin_path,
+    AVALON_CONTAINER_ID
 )
 
 from ayon_substancedesigner import SUBSTANCE_DESIGNER_HOST_DIR
@@ -107,8 +108,7 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         containers = parsing_sd_data_to_dict(
             current_package, AYON_METADATA_CONTAINERS_KEY)
         if containers:
-            for key, container in containers.items():
-                container["objectName"] = key
+            for container in containers.values():
                 yield container
 
     def update_context_data(self, data, changes):
@@ -180,3 +180,38 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
                 ui_mgr.deleteMenu(objectName=tab_menu_label)
 
         self.menu = None
+
+
+def imprint(name, namespace, context, loader, suffix="_CON"):
+    """Imprint a loaded container with metadata.
+
+    Containerisation enables a tracking of version, author and origin
+    for loaded assets.
+
+    Arguments:
+        name (str): Name of resulting assembly
+        namespace (str): Namespace under which to host container
+        context (dict): Asset information
+        loader (load.LoaderPlugin): loader instance used to produce container.
+
+    Returns:
+        None
+
+    """
+    data = {
+        "schema": "ayon:container-2.0",
+        "id": AVALON_CONTAINER_ID,
+        "name": str(name),
+        "namespace": str(namespace) if namespace else None,
+        "loader": str(loader.__class__.__name__),
+        "representation": context["representation"]["id"],
+        "project_name": context["project"]["name"],
+        "objectName": f"{namespace}:{name}_{suffix}" if namespace else f"{name}_{suffix}",
+        "target_package": get_package_from_current_graph()
+    }
+    set_sd_metadata(AYON_METADATA_CONTAINERS_KEY, data)
+
+def remove_container_metadata(container):
+    """Helper method to remove the data for a specific container"""
+    metadata = parsing_sd_data_to_dict(
+        container["target_package"], AYON_METADATA_CONTAINERS_KEY)
