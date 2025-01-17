@@ -20,7 +20,9 @@ from ayon_substancedesigner import SUBSTANCE_DESIGNER_HOST_DIR
 from .lib import (
     package_manager,
     qt_ui_manager,
-    get_package_from_current_graph
+    get_package_from_current_graph,
+    set_sd_metadata,
+    parsing_sd_data_to_dict
 )
 
 
@@ -32,10 +34,9 @@ LOAD_PATH = os.path.join(PLUGINS_DIR, "load")
 CREATE_PATH = os.path.join(PLUGINS_DIR, "create")
 INVENTORY_PATH = os.path.join(PLUGINS_DIR, "inventory")
 
-AYON_METADATA_KEY = "AYON"
-AYON_METADATA_CONTAINERS_KEY = "containers"  # child key
-AYON_METADATA_CONTEXT_KEY = "context"        # child key
-AYON_METADATA_INSTANCES_KEY = "instances"    # child key
+AYON_METADATA_CONTAINERS_KEY = "ayon_containers"  # child key
+AYON_METADATA_CONTEXT_KEY = "ayon_context"        # child key
+AYON_METADATA_INSTANCES_KEY = "ayon_instances"    # child key
 
 
 class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
@@ -74,6 +75,7 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         return package.isModified()
 
     def get_workfile_extensions(self):
+        # support .sbsar and .sbsasm for read-only
         return [".sbs", ".sbsar", ".sbsasm"]
 
     def save_workfile(self, dst_path=None):
@@ -96,6 +98,33 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
             return package.getFilePath()
 
         return None
+
+    def get_containers(self):
+        current_package = get_package_from_current_graph()
+        if not current_package:
+            return
+
+        containers = parsing_sd_data_to_dict(
+            current_package, AYON_METADATA_CONTAINERS_KEY)
+        if containers:
+            for key, container in containers.items():
+                container["objectName"] = key
+                yield container
+
+    def update_context_data(self, data, changes):
+        current_package = get_package_from_current_graph()
+        if not current_package:
+            return
+
+        set_sd_metadata(current_package, AYON_METADATA_CONTEXT_KEY)
+
+    def get_context_data(self):
+        current_package = get_package_from_current_graph()
+        if not current_package:
+            return
+
+        return parsing_sd_data_to_dict(current_package, AYON_METADATA_CONTEXT_KEY) or {}
+
 
     def _install_menu(self):
         from ayon_core.tools.utils import host_tools

@@ -1,4 +1,13 @@
 import sd
+import json
+import ast
+
+import six
+
+import contextlib
+from sd.api.sdapiobject import APIException
+from sd.api.sdvalueserializer import SDValueSerializer
+
 
 
 def package_manager():
@@ -35,3 +44,42 @@ def get_package_from_current_graph():
     if not current_graph:
         return None
     return current_graph.getPackage()
+
+
+def set_sd_metadata(metadata_type: str, metadata: dict):
+    """Set AYON-related metadata in Substance Painter
+
+    Args:
+        metadata_type (str): AYON metadata key
+        metadata (dict): AYON-related metadata
+    """
+    # Need to convert dict to string first
+    metadata_to_str = f"{json.dumps(metadata)}"
+    metadata_value = sd.api.sdvaluestring.SDValueString.sNew(metadata_to_str)
+    target_package = get_package_from_current_graph()
+    package_metadata_dict = target_package.getMetadataDict()
+    package_metadata_dict.setPropertyValueFromId(metadata_type, metadata_value)
+
+
+def parsing_sd_data_to_dict(target_package, metadata_type: str):
+    """Parse and convert Subsatnce Designer SDValue data to dictionary
+
+    Args:
+        target_package (sd.api.sdpackage.SDPackage): target SD Package
+        metadata_type (str): Ayon metadata type
+
+    Returns:
+        dict: metadata dict
+    """
+    metadata_dict = {}
+    package_metadata_dict = target_package.getMetadataDict()
+    try:
+        metadata_sd_value = package_metadata_dict.getPropertyValueFromId(
+            metadata_type)
+        metadata_value = SDValueSerializer.sToString(metadata_sd_value)
+        metadata_dict = ast.literal_eval(metadata_value, "{}")
+
+    except APIException:
+        pass
+
+    return metadata_dict
