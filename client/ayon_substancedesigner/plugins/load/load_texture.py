@@ -3,7 +3,7 @@ import sd
 from ayon_core.pipeline import load
 
 from ayon_core.lib import EnumDef
-from ayon_substancedesigner.api.pipeline import imprint
+from ayon_substancedesigner.api.pipeline import imprint, remove_container_metadata
 from ayon_substancedesigner.api.lib import get_package_from_current_graph
 
 
@@ -52,11 +52,11 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
         current_package = get_package_from_current_graph()
         filepath = self.filepath_from_context(context)
         resource_embed_method = options.get("resource_loading_options", 1)
-        filename = self.import_texture(
+        identifier = self.import_texture(
             filepath, context, current_package, resource_embed_method)
         imprint(
             current_package, name, namespace,
-            context, loader=self, identifier=filename,
+            context, loader=self, identifier=identifier,
             options=options
         )
 
@@ -72,21 +72,29 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
         options = {
             "resource_loading_options": resource_embed_method
         }
-        filename = self.import_texture(
+        identifier = self.import_texture(
             filepath, context, current_package, resource_embed_method)
         imprint(
-            current_package, container["name"], container.get("namespace", ""),
-            context, loader=self, identifier=filename,
+            current_package, container["name"], container.get("namespace", None),
+            context, loader=self, identifier=identifier,
             options=options
         )
 
-
     def remove(self, container):
-        pass
+        # TODO: Supports the check across different packages if needed
+        current_package = get_package_from_current_graph()
+        for resource in current_package.getChildrenResources(True):
+            if resource.getClassName() == "SDResourceBitmap":
+                if resource.getIdentifier() == container["objectName"]:
+                    resource.delete()
+        remove_container_metadata(container)
 
     def import_texture(self, filepath, context, current_package, resource_embed_method):
         project_name = context["project"]["name"]
-        filename = os.path.basename(filepath)
+        filename = os.path.splitext(os.path.basename(filepath))[0]
+        # identifier would convert "." to "_", this makes sure
+        # container data taking correct identifier value
+        identifier = filename.replace(".", "_")
         if not has_resource_file(current_package):
             resource_folder = sd.api.sdresourcefolder.SDResourceFolder.sNew(current_package)
             resource_folder.setIdentifier(f"{project_name}_rosources")
@@ -96,5 +104,5 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
             resource_folder, filepath,
             sd.api.sdresource.EmbedMethod(resource_embed_method)
         )
-        bitmap_resource.setIdentifier(filename)
-        return filename
+        bitmap_resource.setIdentifier(identifier)
+        return identifier
