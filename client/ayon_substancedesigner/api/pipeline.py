@@ -115,7 +115,7 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         if not current_package:
             return
 
-        set_sd_metadata(current_package, AYON_METADATA_CONTEXT_KEY)
+        set_sd_metadata(AYON_METADATA_CONTEXT_KEY, data)
 
     def get_context_data(self):
         current_package = get_package_from_current_graph()

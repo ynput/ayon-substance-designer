@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 import sd
 import json
-import ast
 import contextlib
 
 from sd.api.sdapiobject import APIException
@@ -52,10 +52,7 @@ def set_sd_metadata(metadata_type: str, metadata):
     """
     # Need to convert dict to string first
     target_package = get_package_from_current_graph()
-    if isinstance(metadata, list):
-        metadata_to_str = f"{metadata}"
-    else:
-        metadata_to_str = f"{json.dumps(metadata)}"
+    metadata_to_str = f"{json.dumps(metadata)}"
     metadata_value = sd.api.sdvaluestring.SDValueString.sNew(metadata_to_str)
     package_metadata_dict = target_package.getMetadataDict()
     package_metadata_dict.setPropertyValueFromId(metadata_type, metadata_value)
@@ -74,9 +71,8 @@ def parsing_sd_data(target_package, metadata_type: str, is_dictionary=True):
     metadata = {} if is_dictionary else []
     package_metadata_dict = target_package.getMetadataDict()
     with contextlib.suppress(APIException):
-        metadata_sd_value = package_metadata_dict.getPropertyValueFromId(
-            metadata_type)
-        metadata_value = SDValueSerializer.sToString(metadata_sd_value)
-        metadata = ast.literal_eval(str(metadata_value))
+        metadata_value = package_metadata_dict.getPropertyValueFromId(
+            metadata_type).get()
+        metadata = json.loads(metadata_value)
 
     return metadata
