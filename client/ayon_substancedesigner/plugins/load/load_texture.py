@@ -47,7 +47,6 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
             ),
         ]
 
-
     def load(self, context, name, namespace, options):
         current_package = get_package_from_current_graph()
         filepath = self.filepath_from_context(context)
@@ -105,4 +104,5 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
             sd.api.sdresource.EmbedMethod(resource_embed_method)
         )
         bitmap_resource.setIdentifier(identifier)
+
         return identifier
