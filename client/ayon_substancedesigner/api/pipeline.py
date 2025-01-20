@@ -228,3 +228,45 @@ def remove_container_metadata(container):
         if container_data["objectName"] != container["objectName"]
     ]
     set_sd_metadata(AYON_METADATA_CONTAINERS_KEY, metadata_remainder)
+
+
+def set_instance(instance_id, instance_data, update=False):
+    """Helper method to directly set the data for a specific container
+
+    Args:
+        instance_id (str): Unique identifier for the instance
+        instance_data (dict): The instance data to store in the metaadata.
+    """
+    set_instances({instance_id: instance_data}, update=update)
+
+
+def set_instances(instance_data_by_id, update=False):
+    """Store data for multiple instances at the same time.
+
+    Args:
+        instance_data_by_id (dict): instance data queried by id
+        update (bool, optional): whether the data needs update.
+            Defaults to False.
+    """
+    instances = parsing_sd_data(AYON_METADATA_INSTANCES_KEY) or {}
+    for instance_id, instance_data in instance_data_by_id.items():
+        if update:
+            existing_data = instances.get(instance_id, {})
+            existing_data.update(instance_data)
+        else:
+            instances[instance_id] = instance_data
+
+    set_sd_metadata(AYON_METADATA_INSTANCES_KEY, instances)
+
+
+def remove_instance(instance_id):
+    """Helper method to remove the data for a specific container"""
+    instances = parsing_sd_data(AYON_METADATA_INSTANCES_KEY) or {}
+    instances.pop(instance_id, None)
+    set_sd_metadata(AYON_METADATA_INSTANCES_KEY, instances)
+
+
+def get_instances():
+    """Return all instances stored in the project instances as a list"""
+    get_instances_by_id = parsing_sd_data(AYON_METADATA_INSTANCES_KEY) or {}
+    return list(get_instances_by_id.values())
