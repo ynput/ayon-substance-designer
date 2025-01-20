@@ -20,7 +20,7 @@ class ExtractTextures(publish.Extractor):
         graph_name = instance.data["graph_name"]
         target_sd_graph = get_sd_graph_by_name(graph_name)
 
-        staging_dir = instance.data["stagingDir"]
+        staging_dir = self.staging_dir(instance)
         extension = instance.data["exportFileFormat"]
 
         result = export.exportSDGraphOutputs(

@@ -37,6 +37,10 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             self.create_image_instance(
                 instance, task_entity, graph_name, map_identifier)
 
+        # if sbsar sets to True, it would enable to export sbsar
+        if instance.data.get("sbsar"):
+            instance.data["families"] += "sbsar"
+
     def create_image_instance(self, instance, task_entity,
                               graph_name, map_identifier):
         """Create a new instance per image.
