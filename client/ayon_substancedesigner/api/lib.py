@@ -56,13 +56,36 @@ def get_current_graph_name():
     return current_graph.getIdentifier()
 
 
-def get_map_identifiers_by_graph(target_graph):
+def get_sd_graph_by_name(graph_name):
+    """Get SD graph base on its name
+
+    Args:
+        graph_name (str): SD graph name
+
+    Returns:
+        sd.api.sdgraph.SDGraph: SD Graph
+    """
+    pkg_mgr = package_manager()
+    for package in pkg_mgr.getUserPackages():
+        for resource in package.getChildrenResources(True):
+            if (
+                resource.getClassName() == "SDGraph"
+                and resource.getIdentifier() == graph_name
+            ):
+                return resource
+
+
+def get_map_identifiers_by_graph(target_graph_name):
     """Get map identifiers of the target SD graph
 
     Args:
-        target_graph (sd.api.sdgraph.SDGraph): SD Graph
+        target_graph_name (str): target SD graph name
+
+    Returns:
+        list: all map identifiers
     """
     all_map_identifiers = []
+    target_graph = get_sd_graph_by_name(target_graph_name)
     for output_node in target_graph.getOutputNodes():
         for output in output_node.getProperties(
             sd.api.sdproperty.SDPropertyCategory.Output):
