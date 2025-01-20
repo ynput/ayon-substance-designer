@@ -192,7 +192,6 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
     def _uninstall_menu(self):
         if self.menu:
-            # self.menu.destroy()
             tab_menu_label = os.environ.get("AYON_MENU_LABEL") or "AYON"
             ctx = sd.getContext()
             sd_app = ctx.getSDApplication()
@@ -200,6 +199,8 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
             # Delete the menu
             if ui_mgr.findMenuFromObjectName() == tab_menu_label:
                 ui_mgr.deleteMenu(objectName=tab_menu_label)
+
+            self.menu.destroy()
 
         self.menu = None
 
@@ -271,25 +272,36 @@ def set_instances(instance_data_by_id, update=False):
         update (bool, optional): whether the data needs update.
             Defaults to False.
     """
-    instances = parsing_sd_data(AYON_METADATA_INSTANCES_KEY) or {}
-    for instance_id, instance_data in instance_data_by_id.items():
-        if update:
-            existing_data = instances.get(instance_id, {})
-            existing_data.update(instance_data)
-        else:
-            instances[instance_id] = instance_data
+    current_package = get_package_from_current_graph()
+    if current_package:
+        instances = parsing_sd_data(
+            current_package, AYON_METADATA_INSTANCES_KEY) or {}
+        for instance_id, instance_data in instance_data_by_id.items():
+            if update:
+                existing_data = instances.get(instance_id, {})
+                existing_data.update(instance_data)
+            else:
+                instances[instance_id] = instance_data
 
-    set_sd_metadata(AYON_METADATA_INSTANCES_KEY, instances)
+        set_sd_metadata(AYON_METADATA_INSTANCES_KEY, instances)
 
 
 def remove_instance(instance_id):
     """Helper method to remove the data for a specific container"""
-    instances = parsing_sd_data(AYON_METADATA_INSTANCES_KEY) or {}
-    instances.pop(instance_id, None)
-    set_sd_metadata(AYON_METADATA_INSTANCES_KEY, instances)
+    current_package = get_package_from_current_graph()
+    if current_package:
+        instances = parsing_sd_data(
+            current_package, AYON_METADATA_INSTANCES_KEY) or {}
+        instances.pop(instance_id, None)
+        set_sd_metadata(AYON_METADATA_INSTANCES_KEY, instances)
 
 
 def get_instances():
     """Return all instances stored in the project instances as a list"""
-    get_instances_by_id = parsing_sd_data(AYON_METADATA_INSTANCES_KEY) or {}
+    current_package = get_package_from_current_graph()
+    if not current_package:
+        return []
+
+    get_instances_by_id = parsing_sd_data(
+        current_package, AYON_METADATA_INSTANCES_KEY) or {}
     return list(get_instances_by_id.values())

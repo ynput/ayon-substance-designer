@@ -4,7 +4,6 @@ import json
 import contextlib
 
 from sd.api.sdapiobject import APIException
-from sd.api.sdvalueserializer import SDValueSerializer
 
 
 def package_manager():
