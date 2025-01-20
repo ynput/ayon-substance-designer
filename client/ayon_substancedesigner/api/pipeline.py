@@ -2,6 +2,7 @@
 """Pipeline tools for Ayon Substance Designer integration."""
 import os
 import logging
+from functools import partial
 
 # Substance 3D Designer modules
 import sd
@@ -13,8 +14,11 @@ from ayon_core.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
 from ayon_core.pipeline import (
     register_creator_plugin_path,
     register_loader_plugin_path,
-    AVALON_CONTAINER_ID
+    AVALON_CONTAINER_ID,
+    get_current_context
 )
+from ayon_core.settings import get_current_project_settings
+from ayon_core.pipeline.context_tools import version_up_current_workfile
 
 from ayon_substancedesigner import SUBSTANCE_DESIGNER_HOST_DIR
 
@@ -130,8 +134,21 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         qt_ui = qt_ui_manager()
         parent = qt_ui.getMainWindow()
 
+        project_settings = get_current_project_settings()
         tab_menu_label = os.environ.get("AYON_MENU_LABEL") or "AYON"
         menu = qt_ui.newMenu(menuTitle=tab_menu_label, objectName=tab_menu_label)
+
+        # Add current context label
+        def _set_current_context_label(action):
+            context = get_current_context()
+            label = "{0[folder_path]}, {0[task_name]}".format(context)
+            action.setText(label)
+
+        action = menu.addAction("Current Context")
+        action.setEnabled(False)
+        # Update context label on menu show
+        menu.aboutToShow.connect(partial(_set_current_context_label, action))
+        menu.addSeparator()
 
         action = menu.addAction("Create...")
         action.triggered.connect(
@@ -161,6 +178,12 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         )
 
         menu.addSeparator()
+
+        if project_settings["core"]["tools"]["ayon_menu"].get(
+            "version_up_current_workfile"):
+                action = menu.addAction("Version Up Workfile")
+                action.triggered.connect(version_up_current_workfile)
+
         action = menu.addAction("Work Files...")
         action.triggered.connect(
             lambda: host_tools.show_workfiles(parent=parent)
