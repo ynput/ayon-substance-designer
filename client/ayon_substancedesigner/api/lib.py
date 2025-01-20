@@ -42,6 +42,35 @@ def get_package_from_current_graph():
     return current_graph.getPackage()
 
 
+def get_current_graph_name():
+    """Get the name of the current SD graph
+
+    Returns:
+        str: current SD graph name
+    """
+    qt_ui = qt_ui_manager()
+    current_graph = qt_ui.getCurrentGraph()
+    if not current_graph:
+        return None
+
+    return current_graph.getIdentifier()
+
+
+def get_map_identifiers_by_graph(target_graph):
+    """Get map identifiers of the target SD graph
+
+    Args:
+        target_graph (sd.api.sdgraph.SDGraph): SD Graph
+    """
+    all_map_identifiers = []
+    for output_node in target_graph.getOutputNodes():
+        for output in output_node.getProperties(
+            sd.api.sdproperty.SDPropertyCategory.Output):
+                all_map_identifiers.append(output.getId())
+
+    return all_map_identifiers
+
+
 def set_sd_metadata(metadata_type: str, metadata):
     """Set AYON-related metadata in Substance Painter
 
