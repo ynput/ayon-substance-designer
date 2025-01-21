@@ -2,7 +2,6 @@
 """Pipeline tools for Ayon Substance Designer integration."""
 import os
 import logging
-from functools import partial
 
 # Substance 3D Designer modules
 import sd

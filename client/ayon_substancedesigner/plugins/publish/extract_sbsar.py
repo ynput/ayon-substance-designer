@@ -18,6 +18,7 @@ class ExtractSbsar(publish.Extractor):
     order = publish.Extractor.order - 0.11
 
     def process(self, instance):
+        self.log.debug("Extracting SBSAR...")
         ctx = sd.getContext()
         exporterInstance = SDSBSARExporter(ctx, None)
         exporter = exporterInstance.sNew()
