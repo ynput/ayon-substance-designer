@@ -14,8 +14,7 @@ from ayon_core.host import HostBase, IWorkfileHost, ILoadHost, IPublishHost
 from ayon_core.pipeline import (
     register_creator_plugin_path,
     register_loader_plugin_path,
-    AVALON_CONTAINER_ID,
-    get_current_context
+    AVALON_CONTAINER_ID
 )
 from ayon_core.settings import get_current_project_settings
 from ayon_core.pipeline.context_tools import version_up_current_workfile
@@ -137,18 +136,6 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         project_settings = get_current_project_settings()
         tab_menu_label = os.environ.get("AYON_MENU_LABEL") or "AYON"
         menu = qt_ui.newMenu(menuTitle=tab_menu_label, objectName=tab_menu_label)
-
-        # Add current context label
-        def _set_current_context_label(action):
-            context = get_current_context()
-            label = "{0[folder_path]}, {0[task_name]}".format(context)
-            action.setText(label)
-
-        action = menu.addAction("Current Context")
-        action.setEnabled(False)
-        # Update context label on menu show
-        menu.aboutToShow.connect(partial(_set_current_context_label, action))
-        menu.addSeparator()
 
         action = menu.addAction("Create...")
         action.triggered.connect(
