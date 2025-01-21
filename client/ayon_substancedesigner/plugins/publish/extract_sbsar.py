@@ -6,7 +6,6 @@ from ayon_substancedesigner.api.lib import get_sd_graph_by_name
 from sd.api.sbs.sdsbsarexporter import SDSBSARExporter
 
 
-
 class ExtractSbsar(publish.Extractor):
     """Extract SBSAR
 

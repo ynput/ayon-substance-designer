@@ -221,7 +221,7 @@ def imprint(current_package, name, namespace, context, loader, identifier, optio
         "objectName": identifier
     }
     if options:
-        for key, value in options:
+        for key, value in options.items():
             data[key] = value
     container_data = parsing_sd_data(
         current_package, AYON_METADATA_CONTAINERS_KEY, is_dictionary=False)

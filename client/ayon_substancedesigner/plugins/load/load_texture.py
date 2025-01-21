@@ -51,12 +51,15 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
         current_package = get_package_from_current_graph()
         filepath = self.filepath_from_context(context)
         resource_embed_method = options.get("resource_loading_options", 1)
+        import_options = {
+            "resource_loading_options": resource_embed_method
+        }
         identifier = self.import_texture(
             filepath, context, current_package, resource_embed_method)
         imprint(
             current_package, name, namespace,
             context, loader=self, identifier=identifier,
-            options=options
+            options=import_options
         )
 
     def update(self, container, context):
