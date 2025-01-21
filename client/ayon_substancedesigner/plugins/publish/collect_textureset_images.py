@@ -37,6 +37,7 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             instance.context.data["projectName"],
             use_local_temp=True
         )
+        instance.data["map_identifiers"] = map_identifiers
         for map_identifier in map_identifiers:
             self.create_image_instance(
                 instance, task_entity, graph_name, map_identifier,

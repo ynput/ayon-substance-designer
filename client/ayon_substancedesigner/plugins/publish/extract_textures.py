@@ -1,3 +1,4 @@
+import os
 import sd.tools.export as export
 from ayon_core.pipeline import KnownPublishError, publish
 from ayon_substancedesigner.api.lib import get_sd_graph_by_name
@@ -30,7 +31,12 @@ class ExtractTextures(publish.Extractor):
                 "Failed to export texture output in graph: {}".format(
                     graph_name)
             )
-
+        map_identifiers = instance.data["map_identifiers"]
+        for file, identifier in zip(os.listdir(staging_dir), map_identifiers):
+            src = os.path.join(staging_dir, file)
+            dst = os.path.join(staging_dir, f"{graph_name}_{identifier}.{extension}")
+            os.rename(src, dst)
+        self.log.debug(f"Extracting to {staging_dir}")
         # The TextureSet instance should not be integrated. It generates no
         # output data. Instead the separated texture instances are generated
         # from it which themselves integrate into the database.
