@@ -106,7 +106,8 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
         # container data taking correct identifier value
         identifier = filename.replace(".", "_")
         if not has_resource_file(current_package):
-            resource_folder = sd.api.sdresourcefolder.SDResourceFolder.sNew(current_package)
+            resource_folder = sd.api.sdresourcefolder.SDResourceFolder.sNew(
+                current_package)
             resource_folder.setIdentifier(f"{project_name}_rosources")
         else:
             resource_folder = get_resource_folder(current_package)
