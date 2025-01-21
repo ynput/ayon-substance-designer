@@ -124,7 +124,8 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         if not current_package:
             return {}
 
-        return parsing_sd_data(current_package, AYON_METADATA_CONTEXT_KEY) or {}
+        return parsing_sd_data(
+            current_package, AYON_METADATA_CONTEXT_KEY) or {}
 
 
     def _install_menu(self):
@@ -134,7 +135,9 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
         project_settings = get_current_project_settings()
         tab_menu_label = os.environ.get("AYON_MENU_LABEL") or "AYON"
-        menu = qt_ui.newMenu(menuTitle=tab_menu_label, objectName=tab_menu_label)
+        menu = qt_ui.newMenu(
+            menuTitle=tab_menu_label, objectName=tab_menu_label
+        )
 
         action = menu.addAction("Create...")
         action.triggered.connect(
@@ -191,7 +194,8 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         self.menu = None
 
 
-def imprint(current_package, name, namespace, context, loader, identifier, options=None):
+def imprint(current_package, name, namespace, context,
+            loader, identifier, options=None):
     """Imprint a loaded container with metadata.
 
     Containerisation enables a tracking of version, author and origin

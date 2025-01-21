@@ -15,10 +15,9 @@ class ExtractSbsar(publish.Extractor):
     hosts = ["substancedesigner"]
     families = ["sbsar"]
 
-    order = publish.Extractor.order - 0.11
+    order = publish.Extractor.order - 0.099
 
     def process(self, instance):
-        self.log.debug("Extracting SBSAR...")
         ctx = sd.getContext()
         exporterInstance = SDSBSARExporter(ctx, None)
         exporter = exporterInstance.sNew()

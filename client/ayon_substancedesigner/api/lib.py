@@ -21,7 +21,8 @@ def qt_ui_manager():
     """Get Qt Python UI Manager of Substance Designer
 
     Returns:
-        sd.api.qtforpythonuimgrwrapper.QtForPythonUIMgrWrapper: Qt Python UI Manager
+        sd.api.qtforpythonuimgrwrapper.QtForPythonUIMgrWrapper: Qt Python
+            UI Manager
     """
     ctx = sd.getContext()
     sd_app = ctx.getSDApplication()

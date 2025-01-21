@@ -3,7 +3,10 @@ import sd
 from ayon_core.pipeline import load
 
 from ayon_core.lib import EnumDef
-from ayon_substancedesigner.api.pipeline import imprint, remove_container_metadata
+from ayon_substancedesigner.api.pipeline import (
+    imprint,
+    remove_container_metadata
+)
 from ayon_substancedesigner.api.lib import get_package_from_current_graph
 
 
@@ -77,8 +80,12 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
         identifier = self.import_texture(
             filepath, context, current_package, resource_embed_method)
         imprint(
-            current_package, container["name"], container.get("namespace", None),
-            context, loader=self, identifier=identifier,
+            current_package,
+            container["name"],
+            container.get("namespace", None),
+            context,
+            loader=self,
+            identifier=identifier,
             options=options
         )
 
@@ -91,7 +98,8 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
                     resource.delete()
         remove_container_metadata(container)
 
-    def import_texture(self, filepath, context, current_package, resource_embed_method):
+    def import_texture(self, filepath, context,
+                       current_package, resource_embed_method):
         project_name = context["project"]["name"]
         filename = os.path.splitext(os.path.basename(filepath))[0]
         # identifier would convert "." to "_", this makes sure
@@ -102,7 +110,7 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
             resource_folder.setIdentifier(f"{project_name}_rosources")
         else:
             resource_folder = get_resource_folder(current_package)
-        bitmap_resource = sd.api.sdresourcebitmap.SDResourceBitmap.sNewFromFile(
+        bitmap_resource = sd.api.sdresourcebitmap.SDResourceBitmap.sNewFromFile(                # noqa
             resource_folder, filepath,
             sd.api.sdresource.EmbedMethod(resource_embed_method)
         )

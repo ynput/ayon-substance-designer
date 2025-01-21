@@ -40,6 +40,7 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
         instance.data["map_identifiers"] = map_identifiers
         # if sbsar sets to True, it would enable to export sbsar
         if instance.data["creator_attributes"].get("sbsar", False):
+            self.log.debug("Adding SBSAR families.")
             instance.data["families"].append("sbsar")
 
         for map_identifier in map_identifiers:

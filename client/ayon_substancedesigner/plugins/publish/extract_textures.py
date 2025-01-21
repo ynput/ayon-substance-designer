@@ -39,7 +39,8 @@ class ExtractTextures(publish.Extractor):
         ]
         for file, identifier in zip(file_list_in_staging, map_identifiers):
             src = os.path.join(staging_dir, file)
-            dst = os.path.join(staging_dir, f"{graph_name}_{identifier}.{extension}")
+            dst = os.path.join(staging_dir,
+                               f"{graph_name}_{identifier}.{extension}")
             os.rename(src, dst)
 
         self.log.debug(f"Extracting to {staging_dir}")
