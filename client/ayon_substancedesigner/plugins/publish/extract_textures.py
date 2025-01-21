@@ -32,10 +32,16 @@ class ExtractTextures(publish.Extractor):
                     graph_name)
             )
         map_identifiers = instance.data["map_identifiers"]
-        for file, identifier in zip(os.listdir(staging_dir), map_identifiers):
+        # Rename the directories accordingly to the output maps
+        file_list_in_staging = [
+            path for path in os.listdir(staging_dir) if os.path.isfile(
+                os.path.join(staging_dir, path))
+        ]
+        for file, identifier in zip(file_list_in_staging, map_identifiers):
             src = os.path.join(staging_dir, file)
             dst = os.path.join(staging_dir, f"{graph_name}_{identifier}.{extension}")
             os.rename(src, dst)
+
         self.log.debug(f"Extracting to {staging_dir}")
         # The TextureSet instance should not be integrated. It generates no
         # output data. Instead the separated texture instances are generated

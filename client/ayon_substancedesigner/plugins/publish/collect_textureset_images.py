@@ -74,7 +74,7 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             task_type,
             context.data["hostName"],
             product_type="texture",
-            variant=instance.data["variant"] + texture_set_name,
+            variant=instance.data["variant"] + f"_{map_identifier}",
             project_settings=context.data["project_settings"]
         )
         image_product_group_name = get_product_name(
