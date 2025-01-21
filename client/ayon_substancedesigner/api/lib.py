@@ -69,7 +69,7 @@ def get_sd_graph_by_name(graph_name):
     for package in pkg_mgr.getUserPackages():
         for resource in package.getChildrenResources(True):
             if (
-                resource.getClassName() == "SDGraph"
+                resource.getClassName() == "SDSBSCompGraph"
                 and resource.getIdentifier() == graph_name
             ):
                 return resource

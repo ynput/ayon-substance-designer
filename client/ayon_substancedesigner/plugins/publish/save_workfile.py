@@ -22,7 +22,7 @@ class SaveCurrentWorkfile(pyblish.api.ContextPlugin):
 
         if host.workfile_has_unsaved_changes():
             self.log.info("Saving current file: {}".format(current))
-            host.save_workfile()
+            host.save_workfile(current)
         else:
             self.log.debug("Skipping workfile save because there are no "
                            "unsaved changes.")

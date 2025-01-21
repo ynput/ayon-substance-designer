@@ -33,16 +33,22 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             task_entity = ayon_api.get_task_by_name(
                 project_name, folder_entity["id"], task_name
             )
+        staging_dir = tempdir.get_temp_dir(
+            instance.context.data["projectName"],
+            use_local_temp=True
+        )
         for map_identifier in map_identifiers:
             self.create_image_instance(
-                instance, task_entity, graph_name, map_identifier)
+                instance, task_entity, graph_name, map_identifier,
+                staging_dir)
 
         # if sbsar sets to True, it would enable to export sbsar
         if instance.data.get("sbsar"):
             instance.data["families"] += "sbsar"
 
     def create_image_instance(self, instance, task_entity,
-                              graph_name, map_identifier):
+                              graph_name, map_identifier,
+                              staging_dir):
         """Create a new instance per image.
 
         The new instances will be of product type `image`.
@@ -79,7 +85,7 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             variant=instance.data["variant"],
             project_settings=context.data["project_settings"]
         )
-        ext = instance.data["exportFileFormat"]
+        ext = instance.data["creator_attributes"].get("exportFileFormat")
         # Prepare representation
         representation = {
             "name": ext.lstrip("."),
@@ -87,10 +93,6 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             "files": f"{texture_set_name}.{ext}",
         }
         # Set up the representation for thumbnail generation
-        staging_dir = tempdir.get_temp_dir(
-            instance.context.data["projectName"],
-            use_local_temp=True
-        )
         representation["tags"] = ["review"]
         representation["stagingDir"] = staging_dir
         # Clone the instance
@@ -134,6 +136,7 @@ class CollectTextureSetStagingDir(pyblish.api.InstancePlugin):
     def process(self, instance):
 
         staging_dir = instance.data["stagingDir"]
+        self.log.debug(staging_dir)
         # Update image instances and their representations
         for image_instance in instance:
 
