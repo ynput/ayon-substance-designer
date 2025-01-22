@@ -21,10 +21,6 @@ class ExtractSbsar(publish.Extractor):
         ctx = sd.getContext()
         exporterInstance = SDSBSARExporter(ctx, None)
         exporter = exporterInstance.sNew()
-
-        graph_name = instance.data["graph_name"]
-        sd_graph = get_sd_graph_by_name(graph_name)
-
         current_file = instance.context.data["currentFile"]
         filename = os.path.basename(current_file)
         filename = filename.replace("sbs", "sbsar")
@@ -34,7 +30,7 @@ class ExtractSbsar(publish.Extractor):
             os.path.join(sbsar_staging_dir, filename))
 
         # export the graph with filepath
-        exporter.exportPackageToSBSAR(sd_graph, filepath)
+        exporter.exportSBSFileToSBSAR(current_file, filepath)
 
         representation = {
             'name': 'sbsar',
