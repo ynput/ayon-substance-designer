@@ -2,8 +2,8 @@ import os
 import sd
 
 from ayon_core.pipeline import publish
-from ayon_substancedesigner.api.lib import get_sd_graph_by_name
 from sd.api.sbs.sdsbsarexporter import SDSBSARExporter
+from ayon_substancedesigner.api.lib import get_sd_graph_by_name
 
 
 class ExtractSbsar(publish.Extractor):
@@ -15,7 +15,7 @@ class ExtractSbsar(publish.Extractor):
     hosts = ["substancedesigner"]
     families = ["sbsar"]
 
-    order = publish.Extractor.order - 0.099
+    order = publish.Extractor.order
 
     def process(self, instance):
         ctx = sd.getContext()
@@ -29,18 +29,18 @@ class ExtractSbsar(publish.Extractor):
         filename = os.path.basename(current_file)
         filename = filename.replace("sbs", "sbsar")
         staging_dir = self.staging_dir(instance)
-        sbsar_staging_dir = os.path.join(staging_dir, "sbsar")
         filepath = os.path.normpath(
-            os.path.join(sbsar_staging_dir, filename))
-
+            os.path.join(staging_dir, filename))
         # export the graph with filepath
-        exporter.exportPackageToSBSAR(sd_graph, filepath)
+        exporter.exportPackageToSBSAR(sd_graph.getPackage(), filepath)
 
+        if "representations" not in instance.data:
+            instance.data["representations"] = []
         representation = {
             'name': 'sbsar',
             'ext': 'sbsar',
             'files': filename,
-            "stagingDir": sbsar_staging_dir,
+            "stagingDir": staging_dir,
         }
 
         instance.data["representations"].append(representation)
