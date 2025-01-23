@@ -32,7 +32,7 @@ class ExtractSbsar(publish.Extractor):
         filepath = os.path.normpath(
             os.path.join(staging_dir, filename))
         # export the graph with filepath
-        exporter.exportPackageToSBSAR(sd_graph, filepath)
+        exporter.exportPackageToSBSAR(sd_graph.getPackage(), filepath)
 
         if "representations" not in instance.data:
             instance.data["representations"] = []
