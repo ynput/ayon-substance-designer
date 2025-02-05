@@ -8,6 +8,7 @@ from ayon_core.pipeline import tempdir
 from ayon_core.pipeline.create import get_product_name
 from ayon_substancedesigner.api.lib import (
     get_map_identifiers_by_graph,
+    get_sd_graphs_by_package
 )
 
 
@@ -20,33 +21,40 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
     order = pyblish.api.CollectorOrder + 0.01
 
     def process(self, instance):
-        graph_name = instance.data["graph_name"]
-        map_identifiers = get_map_identifiers_by_graph(graph_name)
-        project_name = instance.context.data["projectName"]
-        folder_entity = ayon_api.get_folder_by_path(
-            project_name,
-            instance.data["folderPath"]
-        )
-        task_name = instance.data.get("task")
-        task_entity = None
-        if folder_entity and task_name:
-            task_entity = ayon_api.get_task_by_name(
-                project_name, folder_entity["id"], task_name
+        creator_attrs = instance.data["creator_attributes"]
+        if creator_attrs.get("exportedGraphs", []):
+            instance.data["exportedGraphs"] = creator_attrs.get(
+                "exportedGraphs", [])
+        else:
+            instance.data["exportedGraph"] = get_sd_graphs_by_package()
+        for graph_name in instance.data["exportedGraphs"]:
+            map_identifiers = get_map_identifiers_by_graph(graph_name)
+            project_name = instance.context.data["projectName"]
+            folder_entity = ayon_api.get_folder_by_path(
+                project_name,
+                instance.data["folderPath"]
             )
-        staging_dir = tempdir.get_temp_dir(
-            instance.context.data["projectName"],
-            use_local_temp=True
-        )
-        instance.data["map_identifiers"] = map_identifiers
+            task_name = instance.data.get("task")
+            task_entity = None
+            if folder_entity and task_name:
+                task_entity = ayon_api.get_task_by_name(
+                    project_name, folder_entity["id"], task_name
+                )
+            staging_dir = tempdir.get_temp_dir(
+                instance.context.data["projectName"],
+                use_local_temp=True
+            )
+            instance.data["map_identifiers"] = map_identifiers
 
-        for map_identifier in map_identifiers:
-            self.create_image_instance(
-                instance, task_entity, graph_name, map_identifier,
-                staging_dir)
+            for map_identifier in map_identifiers:
+                self.create_image_instance(
+                    instance, folder_entity, task_entity, graph_name,
+                    map_identifier, staging_dir
+                )
 
-    def create_image_instance(self, instance, task_entity,
-                              graph_name, map_identifier,
-                              staging_dir):
+    def create_image_instance(self, instance, folder_entity,
+                              task_entity, graph_name,
+                              map_identifier, staging_dir):
         """Create a new instance per image.
 
         The new instances will be of product type `image`.
@@ -56,6 +64,10 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
         context = instance.context
         # Always include the map identifier
         texture_set_name = f"{graph_name}_{map_identifier}"
+
+        folder_name = None
+        if folder_entity:
+            folder_name = folder_entity["name"]
 
         task_name = task_type = None
         if task_entity:
@@ -76,6 +88,7 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
         )
         image_product_group_name = get_product_name(
             context.data["projectName"],
+            folder_name,
             task_name,
             task_type,
             context.data["hostName"],

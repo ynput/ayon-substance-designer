@@ -57,6 +57,21 @@ def get_current_graph_name():
     return current_graph.getIdentifier()
 
 
+def get_sd_graphs_by_package():
+    """Get Substance Designer Graphs by package
+
+    Returns:
+        list: name of Substance Designer Graphs
+    """
+    current_package = get_package_from_current_graph()
+    return [
+        resource.getIdentifier()
+        for resource in
+        current_package.getChildrenResources(True)
+        if resource.getClassName() == "SDSBSCompGraph"
+    ]
+
+
 def get_sd_graph_by_name(graph_name):
     """Get SD graph base on its name
 
