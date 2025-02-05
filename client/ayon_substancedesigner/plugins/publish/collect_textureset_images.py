@@ -48,11 +48,11 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
 
             for map_identifier in map_identifiers:
                 self.create_image_instance(
-                    instance, folder_entity, task_entity, graph_name,
+                    instance, task_entity, graph_name,
                     map_identifier, staging_dir
                 )
 
-    def create_image_instance(self, instance, folder_entity,
+    def create_image_instance(self, instance,
                               task_entity, graph_name,
                               map_identifier, staging_dir):
         """Create a new instance per image.
@@ -64,10 +64,6 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
         context = instance.context
         # Always include the map identifier
         texture_set_name = f"{graph_name}_{map_identifier}"
-
-        folder_name = None
-        if folder_entity:
-            folder_name = folder_entity["name"]
 
         task_name = task_type = None
         if task_entity:
@@ -88,7 +84,6 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
         )
         image_product_group_name = get_product_name(
             context.data["projectName"],
-            folder_name,
             task_name,
             task_type,
             context.data["hostName"],
