@@ -85,6 +85,7 @@ class CreateTextures(TextureCreator):
                     label="File type"),
             EnumDef("exportedGraphs",
                     items=get_sd_graphs_by_package(),
+                    multiselection=True,
                     default=None,
                     label="Graphs To be Exported")
         ]
