@@ -102,10 +102,11 @@ def get_map_identifiers_by_graph(target_graph_name):
     """
     all_map_identifiers = []
     target_graph = get_sd_graph_by_name(target_graph_name)
-    for output_node in target_graph.getOutputNodes():
-        for output in output_node.getProperties(
-            sd.api.sdproperty.SDPropertyCategory.Output):
-                all_map_identifiers.append(output.getId())
+    if target_graph:
+        for output_node in target_graph.getOutputNodes():
+            for output in output_node.getProperties(
+                sd.api.sdproperty.SDPropertyCategory.Output):
+                    all_map_identifiers.append(output.getId())
 
     return all_map_identifiers
 

@@ -29,6 +29,8 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             instance.data["exportedGraphs"] = get_sd_graphs_by_package()
         for graph_name in instance.data["exportedGraphs"]:
             map_identifiers = get_map_identifiers_by_graph(graph_name)
+            if not map_identifiers:
+                continue
             project_name = instance.context.data["projectName"]
             folder_entity = ayon_api.get_folder_by_path(
                 project_name,
