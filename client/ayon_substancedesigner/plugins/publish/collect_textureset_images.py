@@ -48,12 +48,11 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
 
             for map_identifier in map_identifiers:
                 self.create_image_instance(
-                    instance, task_entity, graph_name,
+                    instance, graph_name,
                     map_identifier, staging_dir
                 )
 
-    def create_image_instance(self, instance,
-                              task_entity, graph_name,
+    def create_image_instance(self, instance, graph_name,
                               map_identifier, staging_dir):
         """Create a new instance per image.
 
@@ -65,33 +64,11 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
         # Always include the map identifier
         texture_set_name = f"{graph_name}_{map_identifier}"
 
-        task_name = task_type = None
-        if task_entity:
-            task_name = task_entity["name"]
-            task_type = task_entity["taskType"]
-
         # TODO: The product type actually isn't 'texture' currently but
         #   for now this is only done so the product name starts with
         #   'texture'
-        image_product_name = get_product_name(
-            context.data["projectName"],
-            task_name,
-            task_type,
-            context.data["hostName"],
-            product_type="texture",
-            variant=f"{texture_set_name}",
-            project_settings=context.data["project_settings"]
-        )
-
-        image_product_group_name = get_product_name(
-            context.data["projectName"],
-            task_name,
-            task_type,
-            context.data["hostName"],
-            product_type="texture",
-            variant=instance.data["variant"] + f"_{graph_name}",
-            project_settings=context.data["project_settings"]
-        )
+        image_product_name = f"{instance.name}_{texture_set_name}"
+        image_product_group_name = f"{instance.name}_{texture_set_name}"
         ext = instance.data["creator_attributes"].get("exportFileFormat")
         # Prepare representation
         representation = {
