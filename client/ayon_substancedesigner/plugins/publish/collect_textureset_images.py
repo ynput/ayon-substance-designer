@@ -26,7 +26,7 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             instance.data["exportedGraphs"] = creator_attrs.get(
                 "exportedGraphs", [])
         else:
-            instance.data["exportedGraph"] = get_sd_graphs_by_package()
+            instance.data["exportedGraphs"] = get_sd_graphs_by_package()
         for graph_name in instance.data["exportedGraphs"]:
             map_identifiers = get_map_identifiers_by_graph(graph_name)
             project_name = instance.context.data["projectName"]
@@ -79,16 +79,17 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             task_type,
             context.data["hostName"],
             product_type="texture",
-            variant=instance.data["variant"] + f"_{map_identifier}",
+            variant=f"{texture_set_name}",
             project_settings=context.data["project_settings"]
         )
+
         image_product_group_name = get_product_name(
             context.data["projectName"],
             task_name,
             task_type,
             context.data["hostName"],
             product_type="texture",
-            variant=instance.data["variant"],
+            variant=instance.data["variant"] + f"_{graph_name}",
             project_settings=context.data["project_settings"]
         )
         ext = instance.data["creator_attributes"].get("exportFileFormat")

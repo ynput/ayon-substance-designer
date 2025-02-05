@@ -31,6 +31,30 @@ class CreateTextures(TextureCreator):
             self.exportFileFormat = texture_settings.get(
                 "exportFileFormat", "png")
 
+    def get_dynamic_data(
+        self,
+        project_name,
+        folder_entity,
+        task_entity,
+        variant,
+        host_name,
+        instance
+    ):
+        """
+        The default product name templates for Unreal include {asset} and thus
+        we should pass that along as dynamic data.
+        """
+        dynamic_data = super(CreateTextures, self).get_dynamic_data(
+            project_name,
+            folder_entity,
+            task_entity,
+            variant,
+            host_name,
+            instance
+        )
+        dynamic_data["asset"] = folder_entity["name"]
+        return dynamic_data
+
     def create(self, product_name, instance_data, pre_create_data):
         current_graph_name = get_current_graph_name()
         if not current_graph_name:
