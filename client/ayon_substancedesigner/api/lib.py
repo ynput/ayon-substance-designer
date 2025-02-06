@@ -152,7 +152,8 @@ def parsing_sd_data(target_package, metadata_type: str, is_dictionary=True):
 def export_outputs_by_sd_graph(instance_name, target_graph, output_dir,
                                extension, selected_map_identifiers):
     """
-    Modified and referenced from Substance Designer exportSDGraphOutputs Python API.
+    Modified and referenced from exportSDGraphOutputs in Substance Designer
+    Python API.
     Export the textures from the output nodes of the specified SD Graphs
 
     Args:
