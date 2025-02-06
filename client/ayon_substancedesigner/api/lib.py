@@ -196,7 +196,9 @@ def export_outputs_by_sd_graph(instance_name, target_graph, output_dir,
                     if not property_texture:
                         continue
 
-                    filename = f"{instance_name}_{graph_name}_{map_identifier}.{extension}"
+                    filename = (
+                        f"{instance_name}_{graph_name}_{map_identifier}.{extension}"
+                    )
                     texture_filename = os.path.abspath(
                         os.path.join(output_dir, filename)
                     )

@@ -1,5 +1,3 @@
-import os
-import sd.tools.export as export
 from ayon_core.pipeline import KnownPublishError, publish
 from ayon_substancedesigner.api.lib import (
     get_sd_graph_by_name,
