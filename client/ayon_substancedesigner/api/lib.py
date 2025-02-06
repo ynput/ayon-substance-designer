@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+import os
 import sd
 import json
 import contextlib
 
 from sd.api.sdapiobject import APIException
+from sd.api.sbs import sdsbscompgraph
+from sd.api import sdproperty
 
 
 def package_manager():
@@ -98,15 +101,15 @@ def get_map_identifiers_by_graph(target_graph_name):
         target_graph_name (str): target SD graph name
 
     Returns:
-        list: all map identifiers
+        set: all map identifiers
     """
-    all_map_identifiers = []
+    all_map_identifiers = set()
     target_graph = get_sd_graph_by_name(target_graph_name)
     if target_graph:
         for output_node in target_graph.getOutputNodes():
             for output in output_node.getProperties(
                 sd.api.sdproperty.SDPropertyCategory.Output):
-                    all_map_identifiers.append(output.getId())
+                    all_map_identifiers.add(output.getId())
 
     return all_map_identifiers
 
@@ -144,3 +147,81 @@ def parsing_sd_data(target_package, metadata_type: str, is_dictionary=True):
         metadata = json.loads(metadata_value)
 
     return metadata
+
+
+def export_outputs_by_sd_graph(instance_name, target_graph, output_dir,
+                               extension, selected_map_identifiers):
+    """
+    Modified and referenced from Substance Designer exportSDGraphOutputs Python API.
+    Export the textures from the output nodes of the specified SD Graphs
+
+    Args:
+        instance_name (Instance): instance name
+        target_graph (sd.api.sdgraph.SDGraph): target SD Graph
+        output_dir (str): output directory
+        extension (str): extension
+        selected_map_identifiers (set): list of maps targeted to be exported
+
+    Returns:
+        bool: Shows if the maps are successfully exported
+    """
+    if not target_graph:
+        return False
+
+    if not issubclass(type(target_graph), sdsbscompgraph.SDSBSCompGraph):
+        return False
+
+    # Compute the SDSBSCompGraph so that all node's textures are computed
+    target_graph.compute()
+
+    # Get some information on the graph
+    graph_name = target_graph.getIdentifier()
+
+    for sd_node in target_graph.getOutputNodes():
+        node_definition = sd_node.getDefinition()
+        for output in sd_node.getProperties(
+            sd.api.sdproperty.SDPropertyCategory.Output):
+                map_identifier = output.getId()
+                if map_identifier not in selected_map_identifiers:
+                    continue
+                output_properties = node_definition.getProperties(
+                    sdproperty.SDPropertyCategory.Output
+                )
+                for output_property in output_properties:
+                    # Get the property value
+                    property_value = sd_node.getPropertyValue(output_property)
+
+                    # Get the property value as texture
+                    property_texture = property_value.get()
+                    if not property_texture:
+                        continue
+
+                    filename = f"{instance_name}_{graph_name}_{map_identifier}.{extension}"
+                    texture_filename = os.path.abspath(
+                        os.path.join(output_dir, filename)
+                    )
+
+                    try:
+                        property_texture.save(texture_filename)
+                    except APIException:
+                        print('Fail to save texture %s' % texture_filename)
+
+    return True
+
+
+def get_output_maps_from_graphs():
+    """Get Output Maps from Substance Designer graphs by package
+
+    Returns:
+        set: name of the output maps from substance designer graphs
+    """
+    all_output_maps = set()
+    current_package = get_package_from_current_graph()
+    for resource in current_package.getChildrenResources(True):
+        if resource.getClassName() == "SDSBSCompGraph":
+            for output_node in resource.getOutputNodes():
+                for output in set(output_node.getProperties(
+                    sd.api.sdproperty.SDPropertyCategory.Output)):
+                        all_output_maps.add(output.getId())
+
+    return all_output_maps

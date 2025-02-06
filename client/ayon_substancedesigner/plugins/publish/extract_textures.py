@@ -1,7 +1,10 @@
 import os
 import sd.tools.export as export
 from ayon_core.pipeline import KnownPublishError, publish
-from ayon_substancedesigner.api.lib import get_sd_graph_by_name
+from ayon_substancedesigner.api.lib import (
+    get_sd_graph_by_name,
+    export_outputs_by_sd_graph
+)
 
 
 class ExtractTextures(publish.Extractor):
@@ -19,27 +22,21 @@ class ExtractTextures(publish.Extractor):
     def process(self, instance):
         staging_dir = self.staging_dir(instance)
         extension = instance.data["creator_attributes"].get("exportFileFormat")
-        map_identifiers = instance.data["map_identifiers"]
 
         for graph_name in instance.data["exportedGraphs"]:
+            selected_map_identifiers = instance.data[graph_name].get(
+                "map_identifiers", {})
             target_sd_graph = get_sd_graph_by_name(graph_name)
-            result = export.exportSDGraphOutputs(
-                target_sd_graph, staging_dir, extension)
+            result = export_outputs_by_sd_graph(
+                instance.name, target_sd_graph,
+                staging_dir, extension,
+                selected_map_identifiers
+            )
             if not result:
                 raise KnownPublishError(
                     "Failed to export texture output in graph: {}".format(
                         graph_name)
                 )
-            # Rename the directories accordingly to the output maps
-            file_list_in_staging = [
-                path for path in os.listdir(staging_dir) if os.path.isfile(
-                    os.path.join(staging_dir, path))
-            ]
-            for file, identifier in zip(file_list_in_staging, map_identifiers):
-                src = os.path.join(staging_dir, file)
-                dst = os.path.join(staging_dir,
-                                f"{graph_name}_{identifier}.{extension}")
-                os.rename(src, dst)
 
             self.log.debug(f"Extracting to {staging_dir}")
         # The TextureSet instance should not be integrated. It generates no

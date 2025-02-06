@@ -6,7 +6,8 @@ from ayon_core.lib import BoolDef, EnumDef
 from ayon_substancedesigner.api.pipeline import set_instance
 from ayon_substancedesigner.api.lib import (
     get_current_graph_name,
-    get_sd_graphs_by_package
+    get_sd_graphs_by_package,
+    get_output_maps_from_graphs
 )
 from ayon_substancedesigner.api.plugin import TextureCreator
 
@@ -66,7 +67,8 @@ class CreateTextures(TextureCreator):
         for key in [
             "review",
             "exportFileFormat",
-            "exportedGraphs"
+            "exportedGraphs",
+            "exportedGraphsOutputs"
         ]:
             if key in pre_create_data:
                 creator_attributes[key] = pre_create_data[key]
@@ -111,5 +113,10 @@ class CreateTextures(TextureCreator):
                     items=get_sd_graphs_by_package(),
                     multiselection=True,
                     default=None,
-                    label="Graphs To be Exported")
+                    label="Graphs To be Exported"),
+            EnumDef("exportedGraphsOutputs",
+                    items=get_output_maps_from_graphs(),
+                    multiselection=True,
+                    default=None,
+                    label="Graph Outputs To be Exported")
         ]

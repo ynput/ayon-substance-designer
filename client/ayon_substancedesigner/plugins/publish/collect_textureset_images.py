@@ -1,11 +1,10 @@
 import copy
 
 import pyblish.api
-import ayon_api
 
 from ayon_core.pipeline import tempdir
+from ayon_core.pipeline.publish import KnownPublishError
 
-from ayon_core.pipeline.create import get_product_name
 from ayon_substancedesigner.api.lib import (
     get_map_identifiers_by_graph,
     get_sd_graphs_by_package
@@ -21,32 +20,36 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
     order = pyblish.api.CollectorOrder + 0.01
 
     def process(self, instance):
+        staging_dir = tempdir.get_temp_dir(
+            instance.context.data["projectName"],
+            use_local_temp=True
+        )
         creator_attrs = instance.data["creator_attributes"]
         if creator_attrs.get("exportedGraphs", []):
             instance.data["exportedGraphs"] = creator_attrs.get(
                 "exportedGraphs", [])
         else:
             instance.data["exportedGraphs"] = get_sd_graphs_by_package()
+
+        selected_map_identifiers = creator_attrs.get(
+            "exportedGraphsOutputs", {})
         for graph_name in instance.data["exportedGraphs"]:
             map_identifiers = get_map_identifiers_by_graph(graph_name)
             if not map_identifiers:
                 continue
-            project_name = instance.context.data["projectName"]
-            folder_entity = ayon_api.get_folder_by_path(
-                project_name,
-                instance.data["folderPath"]
-            )
-            task_name = instance.data.get("task")
-            task_entity = None
-            if folder_entity and task_name:
-                task_entity = ayon_api.get_task_by_name(
-                    project_name, folder_entity["id"], task_name
+            if selected_map_identifiers:
+                map_identifiers = map_identifiers.intersection(
+                    selected_map_identifiers
                 )
-            staging_dir = tempdir.get_temp_dir(
-                instance.context.data["projectName"],
-                use_local_temp=True
-            )
-            instance.data["map_identifiers"] = map_identifiers
+                if not map_identifiers:
+                    raise KnownPublishError(
+                        f"Selected output maps {selected_map_identifiers}"
+                        f"not found in the graph: {graph_name}"
+                    )
+
+            instance.data[graph_name] = {
+                "map_identifiers": map_identifiers
+            }
 
             for map_identifier in map_identifiers:
                 self.create_image_instance(
@@ -70,13 +73,13 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
         #   for now this is only done so the product name starts with
         #   'texture'
         image_product_name = f"{instance.name}_{texture_set_name}"
-        image_product_group_name = f"{instance.name}_{texture_set_name}"
+        image_product_group_name = f"{instance.name}_{graph_name}"
         ext = instance.data["creator_attributes"].get("exportFileFormat")
         # Prepare representation
         representation = {
             "name": ext.lstrip("."),
             "ext": ext.lstrip("."),
-            "files": f"{texture_set_name}.{ext}",
+            "files": f"{image_product_name}.{ext}",
         }
         # Set up the representation for thumbnail generation
         representation["tags"] = ["review"]
