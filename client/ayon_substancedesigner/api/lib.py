@@ -243,10 +243,8 @@ def get_colorspace_data(raw_colorspace=False):
     app = ctx.getSDApplication()
 
     # Access the color management engine.
-    cm = app.getColorManagementEngine()
-
-    color_management_name = cm.getName()
+    color_management = app.getColorManagementEngine()
     if raw_colorspace:
-        return color_management_name.getRawColorSpaceName()
+        return color_management.getRawColorSpaceName()
     else:
-        return color_management_name.getWorkingColorSpaceName()
+        return color_management.getWorkingColorSpaceName()
