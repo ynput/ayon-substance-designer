@@ -233,7 +233,7 @@ def get_output_maps_from_graphs():
 def get_colorspace_data(raw_colorspace=False):
     """Get Colorspace data of the output map
     Args:
-        raw_colorspace (bool, optional): raw colorspace data.
+        raw_colorspace (bool, optional): Use raw colorspace data.
                                          Defaults to False.
 
     Returns:
