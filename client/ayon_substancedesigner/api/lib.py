@@ -181,7 +181,7 @@ def export_outputs_by_sd_graph(instance_name, target_graph, output_dir,
     for sd_node in target_graph.getOutputNodes():
         node_definition = sd_node.getDefinition()
         for output in sd_node.getProperties(
-            sd.api.sdproperty.SDPropertyCategory.Output):
+            sdproperty.SDPropertyCategory.Output):
                 map_identifier = output.getId()
                 if map_identifier not in selected_map_identifiers:
                     continue
@@ -228,3 +228,25 @@ def get_output_maps_from_graphs():
                         all_output_maps.add(output.getId())
 
     return all_output_maps
+
+
+def get_colorspace_data(raw_colorspace=False):
+    """Get Colorspace data of the output map
+    Args:
+        raw_colorspace (bool, optional): raw colorspace data.
+                                         Defaults to False.
+
+    Returns:
+        str: colorspace name
+    """
+    ctx = sd.getContext()
+    app = ctx.getSDApplication()
+
+    # Access the color management engine.
+    cm = app.getColorManagementEngine()
+
+    color_management_name = cm.getName()
+    if raw_colorspace:
+        return color_management_name.getRawColorSpaceName()
+    else:
+        return color_management_name.getWorkingColorSpaceName()

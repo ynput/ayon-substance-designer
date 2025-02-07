@@ -7,7 +7,8 @@ from ayon_core.pipeline.publish import KnownPublishError
 
 from ayon_substancedesigner.api.lib import (
     get_map_identifiers_by_graph,
-    get_sd_graphs_by_package
+    get_sd_graphs_by_package,
+    get_colorspace_data
 )
 
 
@@ -105,6 +106,17 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
 
         # Store the texture set name and stack name on the instance
         image_instance.data["textureSetName"] = texture_set_name
+
+        # The current api does not support to get colorspace data
+        # from the output so the colorspace setting is hardcoded for
+        # the colorspace data accordingly to the default output setting
+        if map_identifier in ["diffuse", "basecolor"]:
+            colorspace = get_colorspace_data()
+        else:
+            colorspace = get_colorspace_data(raw_colorspace=True)
+
+        self.log.debug(f"{image_product_name} colorspace: {colorspace}")
+        image_instance.data["colorspace"] = colorspace
 
         # Store the instance in the original instance as a member
         instance.append(image_instance)

@@ -5,7 +5,8 @@ from ayon_substancedesigner.api.lib import (
 )
 
 
-class ExtractTextures(publish.Extractor):
+class ExtractTextures(publish.Extractor,
+                      publish.ColormanagedPyblishPluginMixin):
     """Extract Textures as Graph Outputs
 
     """
@@ -37,6 +38,22 @@ class ExtractTextures(publish.Extractor):
                 )
 
             self.log.debug(f"Extracting to {staging_dir}")
+        # We'll insert the color space data for each image instance that we
+        # added into this texture set. The collector couldn't do so because
+        # some anatomy and other instance data needs to be collected prior
+        context = instance.context
+        for image_instance in instance:
+            representation = next(iter(image_instance.data["representations"]))
+
+            colorspace = image_instance.data.get("colorspace")
+            if not colorspace:
+                self.log.debug("No color space data present for instance: "
+                               f"{image_instance}")
+                continue
+
+            self.set_representation_colorspace(representation,
+                                               context=context,
+                                               colorspace=colorspace)
         # The TextureSet instance should not be integrated. It generates no
         # output data. Instead the separated texture instances are generated
         # from it which themselves integrate into the database.
