@@ -13,17 +13,13 @@ from ayon_core.settings import get_current_project_settings
 
 log = logging.getLogger("ayon_substancedesigner")
 
-
-def add_graph_with_template(graph_name, project_template,
-                            template_filepath, temp_package_filepath):
+def parse_graph_from_template(graph_name, project_template, template_filepath):
     """Add graph by referencing the template
 
     Args:
         graph_name (str): graph_name
         project_template (str): project template name
         template_filepath (str): Substance template filepath
-        temp_package_filepath (str): temp package filepath
-        log(log.logger): log message
 
     """
     # Parse the template substance file
@@ -45,6 +41,19 @@ def add_graph_with_template(graph_name, project_template,
         )
         exit()
 
+    identifier_element = graph_element.find('identifier')
+    if identifier.attrib.get('v') == project_template:
+        identifier_element.attrib['v'] = graph_name
+    return graph_element
+
+
+def add_graphs_to_package(parsed_graph_names, temp_package_filepath):
+    """Add graphs to the temp package
+
+    Args:
+        temp_package_filepath (str): temp package filepath
+
+    """
     # Parse the temp package file
     unsaved_tree = etree.parse(temp_package_filepath)
     unsaved_root = unsaved_tree.getroot()
@@ -55,20 +64,14 @@ def add_graph_with_template(graph_name, project_template,
     # Remove the existing <content/> element if it exists
     if content_element is not None:
         unsaved_root.remove(content_element)
-
     # Create a new <content> element and append the copied <graph> element
     new_content = etree.Element('content')
-    new_content.append(graph_element)  # Append the copied <graph> element
+    new_content.extend(parsed_graph_names)  # Append the copied <graph> element
     unsaved_root.append(new_content)   # Add the new <content> to the root
-    identifier_element = graph_element.find('identifier')
-    if identifier.attrib.get('v') == project_template:
-        identifier_element.attrib['v'] = graph_name
-        # Save the modified content for Substance file
+    # Save the modified content for Substance file
     unsaved_tree.write(temp_package_filepath, encoding='utf-8', xml_declaration=True)
 
-    print(
-        f"Graph with identifier '{project_template}' copied and pasted successfully!"
-    )
+    print("All graphs are copied and pasted successfully!")
 
 
 def create_tmp_package_for_template(sd_pkg_mgr, project_name):
@@ -123,22 +126,21 @@ def create_project_with_from_template(project_settings=None):
     if not project_creation_settings:
         return
 
+    parsed_graph_names = []
     for project_template_setting in project_template_settings:
         graph_name = project_template_setting["name"]
         project_template = project_template_setting["project_workflow"]
         template_filepath = get_template_filename_from_project_settings(
             resources_dir, project_template
         )
-        if not template_filepath or not os.path.exists(template_filepath):
-            new_empty_graph = SDSBSCompGraph.sNew(package)
-            new_empty_graph.setIdentifier(graph_name)
-            sd_pkg_mgr.savePackage(package)
-        else:
-            template_filepath = os.path.normpath(template_filepath)
-            # add graph with template
-            add_graph_with_template(
-                graph_name, project_template, template_filepath, package_filepath
-            )
+        template_filepath = os.path.normpath(template_filepath)
+        parsed_graph = parse_graph_from_template(
+            graph_name, project_template, template_filepath)
+        parsed_graph_names.append(parsed_graph)
+
+    # add graph with template
+    add_graphs_to_package(parsed_graph_names, package_filepath)
+
     sd_pkg_mgr.unloadUserPackage(package)
     sd_pkg_mgr.loadUserPackage(
         package_filepath, updatePackages=True, reloadIfModified=True
@@ -156,6 +158,8 @@ def get_template_filename_from_project_settings(resources_dir, project_template)
         str: absolute filepath of the sbs template file.
     """
     templates_dir = os.path.join(resources_dir, "templates")
+    if project_template == "empty":
+        return os.path.join(templates_dir, "01_empty.sbs")
     if project_template in [
         "metallic_roughness",
         "metallic_roughness_anisotropy",
