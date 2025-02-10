@@ -127,7 +127,6 @@ def create_project_with_from_template(project_settings=None):
             resources_dir, project_template
         )
         template_filepath = os.path.normpath(template_filepath)
-        print(template_filepath)
         if not template_filepath:
             new_empty_graph = SDSBSCompGraph.sNew(package)
             new_empty_graph.setIdentifier(graph_name)
