@@ -27,7 +27,7 @@ from .lib import (
     set_sd_metadata,
     parsing_sd_data
 )
-
+from .project_creation import create_project_with_from_template
 
 log = logging.getLogger("ayon_substancedesigner")
 
@@ -59,11 +59,12 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         register_loader_plugin_path(LOAD_PATH)
         register_creator_plugin_path(CREATE_PATH)
 
-        # log.info("Installing callbacks ... ")
+        log.info("Installing callbacks ... ")
         # self._register_callbacks()
 
         log.info("Installing menu ... ")
         self._install_menu()
+        create_project_with_from_template()
 
         self._has_been_setup = True
 
