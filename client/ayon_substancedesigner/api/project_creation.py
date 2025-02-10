@@ -14,11 +14,12 @@ from ayon_core.settings import get_current_project_settings
 log = logging.getLogger("ayon_substancedesigner")
 
 
-def add_graph_with_template(project_template, template_filepath,
-                            temp_package_filepath):
+def add_graph_with_template(graph_name, project_template,
+                            template_filepath, temp_package_filepath):
     """Add graph by referencing the template
 
     Args:
+        graph_name (str): graph_name
         project_template (str): project template name
         template_filepath (str): Substance template filepath
         temp_package_filepath (str): temp package filepath
@@ -59,8 +60,10 @@ def add_graph_with_template(project_template, template_filepath,
     new_content = etree.Element('content')
     new_content.append(graph_element)  # Append the copied <graph> element
     unsaved_root.append(new_content)   # Add the new <content> to the root
-
-    # Save the modified content for Substance file
+    identifier_element = graph_element.find('identifier')
+    if identifier.attrib.get('v') == project_template:
+        identifier_element.attrib['v'] = graph_name
+        # Save the modified content for Substance file
     unsaved_tree.write(temp_package_filepath, encoding='utf-8', xml_declaration=True)
 
     print(
@@ -126,17 +129,17 @@ def create_project_with_from_template(project_settings=None):
         template_filepath = get_template_filename_from_project_settings(
             resources_dir, project_template
         )
-        template_filepath = os.path.normpath(template_filepath)
-        if not template_filepath:
+        if not template_filepath or not os.path.exists(template_filepath):
             new_empty_graph = SDSBSCompGraph.sNew(package)
             new_empty_graph.setIdentifier(graph_name)
-            return
-
-        # add graph with template
-        add_graph_with_template(
-            project_template, template_filepath, package_filepath
-        )
-
+            sd_pkg_mgr.savePackage(package)
+        else:
+            template_filepath = os.path.normpath(template_filepath)
+            # add graph with template
+            add_graph_with_template(
+                graph_name, project_template, template_filepath, package_filepath
+            )
+    sd_pkg_mgr.unloadUserPackage(package)
     sd_pkg_mgr.loadUserPackage(
         package_filepath, updatePackages=True, reloadIfModified=True
     )
