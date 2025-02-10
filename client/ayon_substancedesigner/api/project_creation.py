@@ -5,7 +5,6 @@ import logging
 import xml.etree.ElementTree as etree
 
 from sd.api.sdapplication import SDApplicationPath
-from sd.api.sbs.sdsbscompgraph import SDSBSCompGraph
 
 from ayon_core.pipeline import tempdir, get_current_project_name
 from ayon_core.settings import get_current_project_settings
@@ -34,9 +33,8 @@ def parse_graph_from_template(graph_name, project_template, template_filepath):
             break
 
     if graph_element is None:
-        print(
-            f"Graph with identifier '{project_template}' "
-            f"not found in {template_filepath}."
+        log.warning(
+            f"Graph with identifier '{project_template}' not found in {template_filepath}."
         )
         exit()
 
@@ -70,7 +68,7 @@ def add_graphs_to_package(parsed_graph_names, temp_package_filepath):
     # Save the modified content for Substance file
     unsaved_tree.write(temp_package_filepath, encoding='utf-8', xml_declaration=True)
 
-    print("All graphs are copied and pasted successfully!")
+    log.warning("All graphs are copied and pasted successfully!")
 
 
 def create_tmp_package_for_template(sd_pkg_mgr, project_name):
