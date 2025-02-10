@@ -14,8 +14,7 @@ from ayon_core.settings import get_current_project_settings
 log = logging.getLogger("ayon_substancedesigner")
 
 def parse_graph_from_template(graph_name, project_template, template_filepath):
-    """Add graph by referencing the template
-
+    """Parse graph by project template name from Substance template file
     Args:
         graph_name (str): graph_name
         project_template (str): project template name
