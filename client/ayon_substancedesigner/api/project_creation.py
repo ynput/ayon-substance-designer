@@ -37,13 +37,16 @@ def parse_graph_from_template(graph_name, project_template, template_filepath):
     graph_element = None
     for graph in substance_root.findall('.//graph'):
         identifier = graph.find('identifier')
-        if identifier is not None and identifier.attrib.get('v') == project_template:
-            graph_element = graph
-            break
+        if identifier is not None and (
+            identifier.attrib.get('v') == project_template
+            ):
+                graph_element = graph
+                break
 
     if graph_element is None:
         log.warning(
-            f"Graph with identifier '{project_template}' not found in {template_filepath}."
+            f"Graph with identifier '{project_template}' "
+            f"not found in {template_filepath}."
         )
         exit()
 
@@ -75,7 +78,11 @@ def add_graphs_to_package(parsed_graph_names, temp_package_filepath):
     new_content.extend(parsed_graph_names)  # Append the copied <graph> element
     unsaved_root.append(new_content)   # Add the new <content> to the root
     # Save the modified content for Substance file
-    unsaved_tree.write(temp_package_filepath, encoding='utf-8', xml_declaration=True)
+    unsaved_tree.write(
+        temp_package_filepath,
+        encoding='utf-8',
+        xml_declaration=True
+    )
 
     log.warning("All graphs are copied and pasted successfully!")
 
@@ -136,24 +143,30 @@ def create_project_with_from_template(project_settings=None):
     output_res_by_graphs = {}
     for project_template_setting in project_template_settings:
         graph_name = project_template_setting["name"]
-        if project_template_setting["template_type"] == "default_substance_template":
-            project_template = project_template_setting["default_substance_template"]
-            template_filepath = get_template_filename_from_project_settings(
-                resources_dir, project_template
-            )
+        if project_template_setting["template_type"] == (
+            "default_substance_template"
+            ):
+                project_template = project_template_setting.get(
+                    "default_substance_template")
+                template_filepath = get_template_filename_from_project_settings(
+                    resources_dir, project_template
+                )
         else:
             custom_template = project_template_setting["custom_template"]
             project_template = custom_template["custom_template_graph"]
             if not project_template:
-                log.warning("Project template not filled. Skipping project creation.")
+                log.warning("Project template not filled. "
+                            "Skipping project creation.")
                 continue
 
             template_filepath = custom_template["custom_template_path"]
             if not template_filepath:
-                log.warning("Template path not filled. Skipping project creation.")
+                log.warning("Template path not filled. "
+                            "Skipping project creation.")
                 continue
             if not os.path.exists(template_filepath):
-                log.warning("Template path does not exist yet. Skipping project creation.")
+                log.warning("Template path does not exist yet. "
+                            "Skipping project creation.")
                 continue
 
         template_filepath = os.path.normpath(template_filepath)
@@ -177,11 +190,12 @@ def create_project_with_from_template(project_settings=None):
     set_output_resolution_by_graphs(output_res_by_graphs)
 
 
-def get_template_filename_from_project_settings(resources_dir, project_template):
+def get_template_filename_from_project_settings(resources_dir,
+                                                project_template):
     """Get template filename from ayon project settings
 
     Args:
-        resources_dir (sd.api.sdapplication.SDApplicationPath): resources directory
+        resources_dir (sd.api.sdapplication.SDApplicationPath): resources dir
         project_template (str): project template name
 
     Returns:
