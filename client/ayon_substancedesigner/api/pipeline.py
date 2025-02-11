@@ -64,7 +64,9 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
         log.info("Installing menu ... ")
         self._install_menu()
-        create_project_with_from_template()
+
+        if os.environ["AVALON_OPEN_LAST_WORKFILE"] == 0:
+            create_project_with_from_template()
 
         self._has_been_setup = True
 

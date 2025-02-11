@@ -117,10 +117,6 @@ def create_project_with_from_template(project_settings=None):
     sd_context = sd.getContext()
     sd_app = sd_context.getSDApplication()
     sd_pkg_mgr = sd_app.getPackageMgr()
-    for package in sd_pkg_mgr.getUserPackages():
-        for resource in package.getChildrenResources(True):
-            if resource.getClassName() == "SDSBSCompGraph":
-                return
 
     if project_settings is None:
         project_settings = get_current_project_settings()
