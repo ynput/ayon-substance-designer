@@ -4,7 +4,11 @@ from ayon_core.pipeline import CreatorError
 from ayon_core.lib import BoolDef, EnumDef
 
 from ayon_substancedesigner.api.pipeline import set_instance
-from ayon_substancedesigner.api.lib import get_current_graph_name
+from ayon_substancedesigner.api.lib import (
+    get_current_graph_name,
+    get_sd_graphs_by_package,
+    get_output_maps_from_graphs
+)
 from ayon_substancedesigner.api.plugin import TextureCreator
 
 
@@ -17,6 +21,40 @@ class CreateTextures(TextureCreator):
 
     default_variant = "Main"
     settings_category = "substancedesigner"
+    review = False
+    exportFileFormat = "png"
+
+    def apply_settings(self, project_settings):
+        texture_settings = project_settings["substancedesigner"].get(
+            "create_texture", {})
+        if texture_settings:
+            self.review = texture_settings.get("review", False)
+            self.exportFileFormat = texture_settings.get(
+                "exportFileFormat", "png")
+
+    def get_dynamic_data(
+        self,
+        project_name,
+        folder_entity,
+        task_entity,
+        variant,
+        host_name,
+        instance
+    ):
+        """
+        The default product name templates for Unreal include {asset} and thus
+        we should pass that along as dynamic data.
+        """
+        dynamic_data = super(CreateTextures, self).get_dynamic_data(
+            project_name,
+            folder_entity,
+            task_entity,
+            variant,
+            host_name,
+            instance
+        )
+        dynamic_data["asset"] = folder_entity["name"]
+        return dynamic_data
 
     def create(self, product_name, instance_data, pre_create_data):
         current_graph_name = get_current_graph_name()
@@ -28,13 +66,12 @@ class CreateTextures(TextureCreator):
             "creator_attributes", dict())
         for key in [
             "review",
-            "sbsar",
             "exportFileFormat",
+            "exportedGraphs",
+            "exportedGraphsOutputs"
         ]:
             if key in pre_create_data:
                 creator_attributes[key] = pre_create_data[key]
-
-        instance_data["graph_name"] = current_graph_name
 
         instance = self.create_instance_in_context(product_name,
                                                    instance_data)
@@ -48,7 +85,7 @@ class CreateTextures(TextureCreator):
             BoolDef("review",
                     label="Review",
                     tooltip="Mark as reviewable",
-                    default=True),
+                    default=self.review),
             EnumDef("exportFileFormat",
                     items={
                         # TODO: Get available extensions from substance API
@@ -70,6 +107,16 @@ class CreateTextures(TextureCreator):
                         #   publishing only a single file
                         # "sbsar": "sbsar",
                     },
-                    default="png",
-                    label="File type")
+                    default=self.exportFileFormat,
+                    label="File type"),
+            EnumDef("exportedGraphs",
+                    items=get_sd_graphs_by_package(),
+                    multiselection=True,
+                    default=None,
+                    label="Graphs To be Exported"),
+            EnumDef("exportedGraphsOutputs",
+                    items=get_output_maps_from_graphs(),
+                    multiselection=True,
+                    default=None,
+                    label="Graph Outputs To be Exported")
         ]
