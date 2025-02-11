@@ -20,6 +20,7 @@ from ayon_substancedesigner.api.lib import get_sd_graph_by_name
 
 log = logging.getLogger("ayon_substancedesigner")
 
+
 def parse_graph_from_template(graph_name, project_template, template_filepath):
     """Parse graph by project template name from Substance template file
     Args:
@@ -135,10 +136,26 @@ def create_project_with_from_template(project_settings=None):
     output_res_by_graphs = {}
     for project_template_setting in project_template_settings:
         graph_name = project_template_setting["name"]
-        project_template = project_template_setting["project_workflow"]
-        template_filepath = get_template_filename_from_project_settings(
-            resources_dir, project_template
-        )
+        if project_template_setting["template_type"] == "default_substance_template":
+            project_template = project_template_setting["default_substance_template"]
+            template_filepath = get_template_filename_from_project_settings(
+                resources_dir, project_template
+            )
+        else:
+            custom_template = project_template_setting["custom_template"]
+            project_template = custom_template["custom_template_graph"]
+            if not project_template:
+                log.warning("Project template not filled. Skipping project creation.")
+                continue
+
+            template_filepath = custom_template["custom_template_path"]
+            if not template_filepath:
+                log.warning("Template path not filled. Skipping project creation.")
+                continue
+            if not os.path.exists(template_filepath):
+                log.warning("Template path does not exist yet. Skipping project creation.")
+                continue
+
         template_filepath = os.path.normpath(template_filepath)
         parsed_graph = parse_graph_from_template(
             graph_name, project_template, template_filepath)

@@ -44,6 +44,14 @@ def template_workflow_enum():
     ]
 
 
+def template_type_enum():
+    return [
+        {"label": "Default Substance Template",
+         "value": "default_substance_template"},
+        {"label": "Custom Template", "value": "custom_template"},
+    ]
+
+
 def document_resolution_enum():
     return [
         {"label": "2", "value": 1},
@@ -80,22 +88,48 @@ def image_format_enum():
     ]
 
 
+class CustomTemplateModel(BaseSettingsModel):
+    _layout = "expanded"
+    custom_template_graph: str = SettingsField(
+        "",
+        title="Custom Template Graph"
+    )
+    custom_template_path: str = SettingsField(
+        "",
+        title="Custom Template Filepath",
+
+    )
+
+
 class ProjectTemplatesModel(BaseSettingsModel):
     _layout = "expanded"
     name: str = SettingsField("default", title="Template Name")
     default_texture_resolution: int = SettingsField(
-        1024, enum_resolver=document_resolution_enum,
+        10, enum_resolver=document_resolution_enum,
         title="Document Resolution",
         description=("Set texture resolution when "
                      "creating new project.")
     )
-    project_workflow: str = SettingsField(
+    template_type: str = SettingsField(
+        "default_substance_template",
+        title="Template Type",
+        description=("Choose either default substance templates "
+                     "or custom template for project creation"),
+        enum_resolver=template_type_enum,
+        conditionalEnum=True,
+    )
+
+    default_substance_template: str = SettingsField(
         "empty", enum_resolver=template_workflow_enum,
         title="Template",
         description=("Choose template to create your "
                      "Substance Graph.")
     )
-
+    custom_template: CustomTemplateModel = SettingsField(
+        title="Custom Template",
+        description="What custom template to use for project creation",
+        default_factory=CustomTemplateModel,
+    )
 
 class ProjectTemplateSettingModel(BaseSettingsModel):
     project_templates: list[ProjectTemplatesModel] = SettingsField(
