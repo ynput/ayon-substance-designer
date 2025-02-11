@@ -46,15 +46,19 @@ def template_workflow_enum():
 
 def document_resolution_enum():
     return [
-        {"label": "16", "value": 16},
-        {"label": "32", "value": 32},
-        {"label": "64", "value": 32},
-        {"label": "128", "value": 128},
-        {"label": "256", "value": 256},
-        {"label": "512", "value": 512},
-        {"label": "1024", "value": 1024},
-        {"label": "2048", "value": 2048},
-        {"label": "4096", "value": 4096}
+        {"label": "2", "value": 1},
+        {"label": "4", "value": 2},
+        {"label": "8", "value": 3},
+        {"label": "16", "value": 4},
+        {"label": "32", "value": 5},
+        {"label": "64", "value": 6},
+        {"label": "128", "value": 7},
+        {"label": "256", "value": 8},
+        {"label": "512", "value": 9},
+        {"label": "1024", "value": 10},
+        {"label": "2048", "value": 11},
+        {"label": "4096", "value": 12},
+        {"label": "8192", "value": 13}
     ]
 
 

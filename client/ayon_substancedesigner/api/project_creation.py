@@ -2,12 +2,20 @@
 import os
 import sd
 import logging
+import math
 import xml.etree.ElementTree as etree
 
 from sd.api.sdapplication import SDApplicationPath
+from sd.api.sdproperty import (
+    SDPropertyCategory,
+    SDPropertyInheritanceMethod
+)
+from sd.api.sdvalueint2 import SDValueInt2
+from sd.api.sdbasetypes import int2
 
 from ayon_core.pipeline import tempdir, get_current_project_name
 from ayon_core.settings import get_current_project_settings
+from ayon_substancedesigner.api.lib import get_sd_graph_by_name
 
 
 log = logging.getLogger("ayon_substancedesigner")
@@ -124,6 +132,7 @@ def create_project_with_from_template(project_settings=None):
         return
 
     parsed_graph_names = []
+    output_res_by_graphs = {}
     for project_template_setting in project_template_settings:
         graph_name = project_template_setting["name"]
         project_template = project_template_setting["project_workflow"]
@@ -135,6 +144,10 @@ def create_project_with_from_template(project_settings=None):
             graph_name, project_template, template_filepath)
         parsed_graph_names.append(parsed_graph)
 
+        output_res_by_graphs[graph_name] = (
+            project_template_setting["default_texture_resolution"]
+        )
+
     # add graph with template
     add_graphs_to_package(parsed_graph_names, package_filepath)
 
@@ -142,6 +155,9 @@ def create_project_with_from_template(project_settings=None):
     sd_pkg_mgr.loadUserPackage(
         package_filepath, updatePackages=True, reloadIfModified=True
     )
+
+    # set user-defined resolution by graphs
+    set_output_resolution_by_graphs(output_res_by_graphs)
 
 
 def get_template_filename_from_project_settings(resources_dir, project_template):
@@ -206,3 +222,23 @@ def get_template_filename_from_project_settings(resources_dir, project_template)
             templates_dir, "13_clo_metallic_roughness.sbs")
 
     return None
+
+
+def set_output_resolution_by_graphs(resolution_size_by_graphs):
+    """Set output resolution per graph accordingly to Ayon settings
+
+    Args:
+        package (sd.api.sdpackage.SDPackage): temp package for graphs
+        resolution_size_by_graphs (dict): resolution data for each graph
+    """
+    for graph_name, res_size in resolution_size_by_graphs.items():
+        graph = get_sd_graph_by_name(graph_name)
+        output_size = graph.getPropertyFromId(
+                "$outputsize", SDPropertyCategory.Input
+        )
+        graph.setPropertyInheritanceMethod(
+            output_size, SDPropertyInheritanceMethod.Absolute
+        )
+        graph.setPropertyValue(
+            output_size, SDValueInt2.sNew(int2(res_size, res_size))
+        )
