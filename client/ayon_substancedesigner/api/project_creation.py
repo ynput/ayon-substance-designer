@@ -148,7 +148,7 @@ def create_project_with_from_template(project_settings=None):
             ):
                 project_template = project_template_setting.get(
                     "default_substance_template")
-                template_filepath = get_template_filename_from_project_settings(
+                template_filepath = get_template_filename_from_project(
                     resources_dir, project_template
                 )
         else:
@@ -190,8 +190,8 @@ def create_project_with_from_template(project_settings=None):
     set_output_resolution_by_graphs(output_res_by_graphs)
 
 
-def get_template_filename_from_project_settings(resources_dir,
-                                                project_template):
+def get_template_filename_from_project(resources_dir,
+                                       project_template):
     """Get template filename from ayon project settings
 
     Args:
