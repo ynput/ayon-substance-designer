@@ -133,8 +133,7 @@ def create_project_with_from_template(project_settings=None):
     resources_dir = sd_app.getPath(SDApplicationPath.DefaultResourcesDir)
     project_creation_settings = project_settings["substancedesigner"].get(
         "project_creation", {})
-    if project_creation_settings.get("enabled", False):
-        return
+
     project_template_settings = project_creation_settings.get(
         "project_templates", [])
     if not project_creation_settings:
