@@ -2,7 +2,6 @@
 import os
 import sd
 import logging
-import math
 import xml.etree.ElementTree as etree
 
 from sd.api.sdapplication import SDApplicationPath
