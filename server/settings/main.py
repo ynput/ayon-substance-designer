@@ -92,11 +92,16 @@ class CustomTemplateModel(BaseSettingsModel):
     _layout = "expanded"
     custom_template_graph: str = SettingsField(
         "",
-        title="Custom Template Graph"
+        title="Custom Template Graph Name",
+        description=(
+            "Name of the graph from the custom template"
+            "you want to create your project from"
+        )
     )
     custom_template_path: str = SettingsField(
         "",
-        title="Custom Template Filepath",
+        title="Path to Custom Template",
+        description="Absolute path of which custom template located."
 
     )
 
