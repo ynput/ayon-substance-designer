@@ -132,6 +132,7 @@ class ProjectTemplatesModel(BaseSettingsModel):
     )
 
 class ProjectTemplateSettingModel(BaseSettingsModel):
+    enabled: bool = SettingsField(False, title="Enabled")
     project_templates: list[ProjectTemplatesModel] = SettingsField(
         default_factory=ProjectTemplatesModel,
         title="Project Templates"
@@ -163,6 +164,7 @@ class SubstanceDesignerSettings(BaseSettingsModel):
 DEFAULT_SD_SETTINGS = {
     "imageio": DEFAULT_IMAGEIO_SETTINGS,
     "project_creation": {
+        "enabled": False,
         "project_templates": []
     },
     "create_texture": {
