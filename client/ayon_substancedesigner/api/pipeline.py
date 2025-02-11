@@ -59,7 +59,7 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
         register_loader_plugin_path(LOAD_PATH)
         register_creator_plugin_path(CREATE_PATH)
 
-        log.info("Installing callbacks ... ")
+        # log.info("Installing callbacks ... ")
         # self._register_callbacks()
 
         log.info("Installing menu ... ")
