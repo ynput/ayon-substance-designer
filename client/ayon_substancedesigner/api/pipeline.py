@@ -67,6 +67,9 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
         if os.environ["AVALON_OPEN_LAST_WORKFILE"] == "0":
             create_project_with_from_template()
+        last_workfile = os.environ["AYON_LAST_WORKFILE"]
+        if not os.path.exists(last_workfile):
+            create_project_with_from_template()
 
         self._has_been_setup = True
 
