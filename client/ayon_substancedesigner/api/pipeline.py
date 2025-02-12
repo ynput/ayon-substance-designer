@@ -27,7 +27,7 @@ from .lib import (
     set_sd_metadata,
     parsing_sd_data
 )
-
+from .project_creation import create_project_with_from_template
 
 log = logging.getLogger("ayon_substancedesigner")
 
@@ -64,6 +64,12 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
         log.info("Installing menu ... ")
         self._install_menu()
+
+        if os.environ["AVALON_OPEN_LAST_WORKFILE"] == "0":
+            create_project_with_from_template()
+        last_workfile = os.environ["AYON_LAST_WORKFILE"]
+        if not os.path.exists(last_workfile):
+            create_project_with_from_template()
 
         self._has_been_setup = True
 
