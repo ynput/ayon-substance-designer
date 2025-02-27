@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
 import sd
+import errno
 import logging
+import ayon_api
 import xml.etree.ElementTree as etree
 
 from sd.api.sdapplication import SDApplicationPath
@@ -12,7 +14,12 @@ from sd.api.sdproperty import (
 from sd.api.sdvalueint2 import SDValueInt2
 from sd.api.sdbasetypes import int2
 
-from ayon_core.pipeline import tempdir, get_current_project_name
+from ayon_core.pipeline import (
+    tempdir,
+    get_current_project_name,
+    get_current_folder_path,
+    get_current_task_name
+)
 from ayon_core.settings import get_current_project_settings
 from ayon_substancedesigner.api.lib import get_sd_graph_by_name
 
@@ -147,32 +154,76 @@ def create_project_with_from_template(project_settings=None):
                 template_filepath = get_template_filename_from_project(
                     resources_dir, project_template
                 )
+        elif project_template_setting["template_type"] == (
+            "custom_template"
+            ):
+                custom_template = project_template_setting["custom_template"]
+                project_template = custom_template["custom_template_graph"]
+                if not project_template:
+                    log.warning("Project template not filled. "
+                                "Skipping project creation.")
+                    continue
+
+                template_filepath = custom_template["custom_template_path"]
+                if not template_filepath:
+                    log.warning("Template path not filled. "
+                                "Skipping project creation.")
+                    continue
+                if not os.path.exists(template_filepath):
+                    log.warning("Template path does not exist yet. "
+                                "Skipping project creation.")
+                    continue
         else:
-            custom_template = project_template_setting["custom_template"]
-            project_template = custom_template["custom_template_graph"]
-            if not project_template:
-                log.warning("Project template not filled. "
+            task_type_template = project_template_setting["task_type_template"]
+            folder_path = get_current_folder_path()
+            task_name = get_current_task_name()
+            folder_entity = ayon_api.get_folder_by_path(
+                project_name,
+                folder_path,
+                fields={"id"})
+            task_entity = ayon_api.get_task_by_name(
+                    project_name, folder_entity["id"], task_name
+                )
+            task_type = task_entity["taskType"]
+            if task_type not in task_type_template["task_types"]:
+                log.warning("Incorrect task types for the project. "
                             "Skipping project creation.")
                 continue
 
-            template_filepath = custom_template["custom_template_path"]
-            if not template_filepath:
-                log.warning("Template path not filled. "
-                            "Skipping project creation.")
-                continue
-            if not os.path.exists(template_filepath):
-                log.warning("Template path does not exist yet. "
-                            "Skipping project creation.")
-                continue
+            workdir = os.getenv("AYON_WORKDIR")
+
+            try:
+                os.makedirs(workdir)
+            except OSError as e:
+                # An already existing working directory is fine.
+                if e.errno == errno.EEXIST:
+                    pass
+                else:
+                    raise
+
+            template_filepath = os.path.join(workdir, f"{task_type}.sbs")
 
         template_filepath = os.path.normpath(template_filepath)
-        parsed_graph = parse_graph_from_template(
-            graph_name, project_template, template_filepath)
-        parsed_graph_names.append(parsed_graph)
+        if  project_template_setting["template_type"] == (
+            "task_type_template"
+            ):
+            for task_name in task_type_template["task_names"]:
+                graph_name = f"{graph_name}_{task_name}"
+                parsed_graph = parse_graph_from_template(
+                    graph_name, task_name, template_filepath
+                )
+                parsed_graph_names.append(parsed_graph)
+                output_res_by_graphs[graph_name] = (
+                    project_template_setting["default_texture_resolution"]
+                )
+        else:
+            parsed_graph = parse_graph_from_template(
+                graph_name, project_template, template_filepath)
+            parsed_graph_names.append(parsed_graph)
 
-        output_res_by_graphs[graph_name] = (
-            project_template_setting["default_texture_resolution"]
-        )
+            output_res_by_graphs[graph_name] = (
+                project_template_setting["default_texture_resolution"]
+            )
 
     # add graph with template
     add_graphs_to_package(parsed_graph_names, package_filepath)
