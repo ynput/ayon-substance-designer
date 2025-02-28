@@ -103,6 +103,8 @@ class TaskTypeTemplateModel(BaseSettingsModel):
     task_names: list[str] = SettingsField(
         default_factory=list, title="Task names"
     )
+    path: str = SettingsField("", title="Path to template")
+
 
 class CustomTemplateModel(BaseSettingsModel):
     _layout = "expanded"

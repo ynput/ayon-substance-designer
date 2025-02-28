@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import sd
-import errno
 import logging
 import ayon_api
 import xml.etree.ElementTree as etree
@@ -15,11 +14,13 @@ from sd.api.sdvalueint2 import SDValueInt2
 from sd.api.sdbasetypes import int2
 
 from ayon_core.pipeline import (
+    Anatomy,
     tempdir,
     get_current_project_name,
     get_current_folder_path,
     get_current_task_name
 )
+from ayon_core.lib import StringTemplate
 from ayon_core.settings import get_current_project_settings
 from ayon_substancedesigner.api.lib import get_sd_graph_by_name
 
@@ -180,7 +181,7 @@ def create_project_with_from_template(project_settings=None):
             folder_entity = ayon_api.get_folder_by_path(
                 project_name,
                 folder_path,
-                fields={"id"})
+                fields={"id", "name", "folderType"})
             task_entity = ayon_api.get_task_by_name(
                     project_name, folder_entity["id"], task_name
                 )
@@ -190,27 +191,12 @@ def create_project_with_from_template(project_settings=None):
                             "Skipping project creation.")
                 continue
 
-            workdir = os.getenv("AYON_WORKDIR")
-
-            try:
-                os.makedirs(workdir)
-            except OSError as e:
-                # An already existing working directory is fine.
-                if e.errno == errno.EEXIST:
-                    pass
-                else:
-                    raise
-
-            templates_dir = os.path.join(workdir, "templates")
-            template_filepath = os.path.join(templates_dir, f"{task_type}.sbs")
+            path = task_type_template["path"]
+            template_filepath = resolve_template_path(
+                path, project_name, folder_path, task_name)
             if not os.path.exists(template_filepath):
-                task_type = task_type.lower()
-                template_filepath = os.path.join(
-                    templates_dir, f"{task_type}.sbs")
-                if not os.path.exists(template_filepath):
-                    log.warning(f"No related substance file {task_type}.sbs "
-                                f"found in {workdir}")
-                    continue
+                log.warning(f"{template_filepath} not found.")
+                continue
 
         template_filepath = os.path.normpath(template_filepath)
         if  project_template_setting["template_type"] == (
@@ -309,6 +295,46 @@ def get_template_filename_from_project(resources_dir,
             templates_dir, "13_clo_metallic_roughness.sbs")
 
     return None
+
+
+def resolve_template_path(path, project_name, folder_entity, task_entity):
+    """resolve template path for Substance files
+
+    Args:
+        path (_type_): template path to resolve
+        project_name (str): project name
+        folder_entity (dict): folder entity data
+        task_name (str): task name
+
+    Returns:
+        str: resolved path for Substance template file
+    """
+    anatomy = Anatomy(project_name)
+    fill_data = {
+        key: value
+        for key, value in os.environ.items()
+    }
+
+    fill_data["root"] = anatomy.roots
+    fill_data["project"] = {
+        "name": project_name,
+        "code": anatomy.project_code,
+    }
+    fill_data["folder"] = {
+        "name": folder_entity["name"],
+        "folderType": folder_entity["folderType"],
+        "type": folder_entity["folderType"]
+    }
+    fill_data["task"] = {
+        "name": task_entity["name"],
+        "taskType": task_entity["taskType"],
+        "type": task_entity["taskType"]
+    }
+
+    result = StringTemplate.format_template(path, fill_data)
+    if result.solved:
+        path = result.normalized()
+    return path
 
 
 def set_output_resolution_by_graphs(resolution_size_by_graphs):
