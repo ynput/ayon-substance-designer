@@ -205,7 +205,8 @@ def create_project_with_from_template(project_settings=None):
             template_filepath = os.path.join(templates_dir, f"{task_type}.sbs")
             if not os.path.exists(template_filepath):
                 task_type = task_type.lower()
-                template_filepath = os.path.join(templates_dir, f"{task_type}.sbs")
+                template_filepath = os.path.join(
+                    templates_dir, f"{task_type}.sbs")
                 if not os.path.exists(template_filepath):
                     log.warning(f"No related substance file {task_type}.sbs "
                                 f"found in {workdir}")
