@@ -105,11 +105,17 @@ def create_tmp_package_for_template(sd_pkg_mgr, project_name):
         sd.api.sdpackage.SDPackage, str: SD Package and template file path
 
     """
+    temp_filename = "temp_ayon_package.sbs"
+    for temp_package in sd_pkg_mgr.getUserPackages():
+        path = temp_package.getFilePath()
+        if os.path.basename(path) == temp_filename:
+            return temp_package, path
+
     temp_package = sd_pkg_mgr.newUserPackage()
     staging_dir = tempdir.get_temp_dir(
         project_name, use_local_temp=True
     )
-    path = os.path.join(staging_dir, "temp_ayon_package.sbs")
+    path = os.path.join(staging_dir, temp_filename)
     path = os.path.normpath(path)
     sd_pkg_mgr.savePackageAs(temp_package, fileAbsPath=path)
 
@@ -193,7 +199,7 @@ def create_project_with_from_template(project_settings=None):
 
             path = task_type_template["path"]
             template_filepath = resolve_template_path(
-                path, project_name, folder_path, task_name)
+                path, project_name, folder_entity, task_entity)
             if not os.path.exists(template_filepath):
                 log.warning(f"{template_filepath} not found.")
                 continue
@@ -202,7 +208,19 @@ def create_project_with_from_template(project_settings=None):
         if  project_template_setting["template_type"] == (
             "task_type_template"
             ):
-            for task_name in task_type_template["task_names"]:
+
+            if task_type_template["task_names"]:
+                task_names = [
+                    task_name for task_name
+                    in task_type_template["task_names"]
+                ]
+            else:
+                task_names = [
+                    task_name for task_name
+                    in task_type_template["task_types"]
+                ]
+
+            for task_name in task_names:
                 graph_name = f"{graph_name}_{task_name}"
                 parsed_graph = parse_graph_from_template(
                     graph_name, task_name, template_filepath
@@ -212,9 +230,9 @@ def create_project_with_from_template(project_settings=None):
                     project_template_setting["default_texture_resolution"]
                 )
         else:
-            parsed_graph = parse_graph_from_template(
+            all_parsed_graphs = parse_graph_from_template(
                 graph_name, project_template, template_filepath)
-            parsed_graph_names.append(parsed_graph)
+            parsed_graph_names.append(all_parsed_graphs)
 
             output_res_by_graphs[graph_name] = (
                 project_template_setting["default_texture_resolution"]
