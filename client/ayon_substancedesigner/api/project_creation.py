@@ -204,39 +204,17 @@ def create_project_with_from_template(project_settings=None):
                 log.warning(f"{template_filepath} not found.")
                 continue
 
+            project_template = task_name
+
         template_filepath = os.path.normpath(template_filepath)
-        if  project_template_setting["template_type"] == (
-            "task_type_template"
-            ):
 
-            if task_type_template["task_names"]:
-                task_names = [
-                    task_name for task_name
-                    in task_type_template["task_names"]
-                ]
-            else:
-                task_names = [
-                    task_name for task_name
-                    in task_type_template["task_types"]
-                ]
+        all_parsed_graphs = parse_graph_from_template(
+            graph_name, project_template, template_filepath)
+        parsed_graph_names.append(all_parsed_graphs)
 
-            for task_name in task_names:
-                graph_name = f"{graph_name}_{task_name}"
-                parsed_graph = parse_graph_from_template(
-                    graph_name, task_name, template_filepath
-                )
-                parsed_graph_names.append(parsed_graph)
-                output_res_by_graphs[graph_name] = (
-                    project_template_setting["default_texture_resolution"]
-                )
-        else:
-            all_parsed_graphs = parse_graph_from_template(
-                graph_name, project_template, template_filepath)
-            parsed_graph_names.append(all_parsed_graphs)
-
-            output_res_by_graphs[graph_name] = (
-                project_template_setting["default_texture_resolution"]
-            )
+        output_res_by_graphs[graph_name] = (
+            project_template_setting["default_texture_resolution"]
+        )
 
     # add graph with template
     add_graphs_to_package(parsed_graph_names, package_filepath)
