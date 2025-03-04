@@ -171,26 +171,22 @@ def create_project_with_from_template(project_settings=None):
                                 "Skipping project creation.")
                     continue
 
-                template_filepath = custom_template["custom_template_path"]
-                if not template_filepath:
+                path = custom_template["custom_template_path"]
+                if not path:
                     log.warning("Template path not filled. "
                                 "Skipping project creation.")
                     continue
+                folder_entity, task_entity = get_entity_data(project_name)
+                template_filepath = resolve_template_path(
+                    path, project_name, folder_entity, task_entity
+                )
                 if not os.path.exists(template_filepath):
                     log.warning("Template path does not exist yet. "
                                 "Skipping project creation.")
                     continue
         else:
             task_type_template = project_template_setting["task_type_template"]
-            folder_path = get_current_folder_path()
-            task_name = get_current_task_name()
-            folder_entity = ayon_api.get_folder_by_path(
-                project_name,
-                folder_path,
-                fields={"id", "name", "folderType"})
-            task_entity = ayon_api.get_task_by_name(
-                    project_name, folder_entity["id"], task_name
-                )
+            folder_entity, task_entity = get_entity_data(project_name)
             task_type = task_entity["taskType"]
             if task_type not in task_type_template["task_types"]:
                 log.warning("Incorrect task types for the project. "
@@ -204,7 +200,7 @@ def create_project_with_from_template(project_settings=None):
                 log.warning(f"{template_filepath} not found.")
                 continue
 
-            project_template = task_name
+            project_template = task_entity["name"]
 
         template_filepath = os.path.normpath(template_filepath)
 
@@ -351,3 +347,24 @@ def set_output_resolution_by_graphs(resolution_size_by_graphs):
         graph.setPropertyValue(
             output_size, SDValueInt2.sNew(int2(res_size, res_size))
         )
+
+
+def get_entity_data(project_name):
+    """Get entity data from DB
+
+    Args:
+        project_name (str): project name
+
+    Returns:
+        dict, dict: folder entity, task entity
+    """
+    folder_path = get_current_folder_path()
+    task_name = get_current_task_name()
+    folder_entity = ayon_api.get_folder_by_path(
+        project_name,
+        folder_path,
+        fields={"id", "name", "folderType"})
+    task_entity = ayon_api.get_task_by_name(
+            project_name, folder_entity["id"], task_name
+        )
+    return folder_entity, task_entity
