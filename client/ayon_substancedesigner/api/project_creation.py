@@ -55,7 +55,7 @@ def parse_graph_from_template(graph_name, project_template, template_filepath):
             f"Graph with identifier '{project_template}' "
             f"not found in {template_filepath}."
         )
-        exit()
+        return ""
 
     identifier_element = graph_element.find('identifier')
     if identifier.attrib.get('v') == project_template:
@@ -213,7 +213,8 @@ def create_project_with_from_template(project_settings=None):
         )
 
     # add graph with template
-    add_graphs_to_package(parsed_graph_names, package_filepath)
+    if parsed_graph_names:
+        add_graphs_to_package(parsed_graph_names, package_filepath)
 
     sd_pkg_mgr.unloadUserPackage(package)
     sd_pkg_mgr.loadUserPackage(
