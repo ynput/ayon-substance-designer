@@ -218,7 +218,6 @@ def create_project_with_from_template(project_settings=None):
             project_template_setting["default_texture_resolution"]
         )
 
-
     if not parsed_graph_names:
         return
 
