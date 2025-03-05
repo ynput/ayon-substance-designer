@@ -50,16 +50,16 @@ def parse_graph_from_template(graph_name, project_template, template_filepath):
                 graph_element = graph
                 break
 
-    if graph_element is None:
+    if graph_element:
+        identifier_element = graph_element.find('identifier')
+        if identifier.attrib.get('v') == project_template:
+            identifier_element.attrib['v'] = graph_name
+    else:
         log.warning(
             f"Graph with identifier '{project_template}' "
             f"not found in {template_filepath}."
         )
-        return ""
 
-    identifier_element = graph_element.find('identifier')
-    if identifier.attrib.get('v') == project_template:
-        identifier_element.attrib['v'] = graph_name
     return graph_element
 
 
@@ -67,6 +67,7 @@ def add_graphs_to_package(parsed_graph_names, temp_package_filepath):
     """Add graphs to the temp package
 
     Args:
+        parsed_graph_names (list): parsed graph names
         temp_package_filepath (str): temp package filepath
 
     """
@@ -204,9 +205,10 @@ def create_project_with_from_template(project_settings=None):
 
         template_filepath = os.path.normpath(template_filepath)
 
-        all_parsed_graphs = parse_graph_from_template(
+        parsed_graph = parse_graph_from_template(
             graph_name, project_template, template_filepath)
-        parsed_graph_names.append(all_parsed_graphs)
+        if parsed_graph is not None:
+            parsed_graph_names.append(parsed_graph)
 
         output_res_by_graphs[graph_name] = (
             project_template_setting["default_texture_resolution"]
