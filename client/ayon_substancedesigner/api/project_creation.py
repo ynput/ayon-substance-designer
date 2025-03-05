@@ -2,6 +2,7 @@
 import os
 import sd
 import logging
+import ayon_api
 import xml.etree.ElementTree as etree
 
 from sd.api.sdapplication import SDApplicationPath
@@ -12,7 +13,13 @@ from sd.api.sdproperty import (
 from sd.api.sdvalueint2 import SDValueInt2
 from sd.api.sdbasetypes import int2
 
-from ayon_core.pipeline import tempdir, get_current_project_name
+from ayon_core.pipeline import (
+    Anatomy,
+    tempdir,
+    get_current_context
+)
+from ayon_core.pipeline.template_data import get_template_data
+from ayon_core.lib import StringTemplate, filter_profiles
 from ayon_core.settings import get_current_project_settings
 from ayon_substancedesigner.api.lib import get_sd_graph_by_name
 
@@ -42,16 +49,16 @@ def parse_graph_from_template(graph_name, project_template, template_filepath):
                 graph_element = graph
                 break
 
-    if graph_element is None:
+    if graph_element:
+        identifier_element = graph_element.find('identifier')
+        if identifier.attrib.get('v') == project_template:
+            identifier_element.attrib['v'] = graph_name
+    else:
         log.warning(
             f"Graph with identifier '{project_template}' "
             f"not found in {template_filepath}."
         )
-        exit()
 
-    identifier_element = graph_element.find('identifier')
-    if identifier.attrib.get('v') == project_template:
-        identifier_element.attrib['v'] = graph_name
     return graph_element
 
 
@@ -59,6 +66,7 @@ def add_graphs_to_package(parsed_graph_names, temp_package_filepath):
     """Add graphs to the temp package
 
     Args:
+        parsed_graph_names (list): parsed graph names
         temp_package_filepath (str): temp package filepath
 
     """
@@ -97,11 +105,17 @@ def create_tmp_package_for_template(sd_pkg_mgr, project_name):
         sd.api.sdpackage.SDPackage, str: SD Package and template file path
 
     """
+    temp_filename = "temp_ayon_package.sbs"
+    for temp_package in sd_pkg_mgr.getUserPackages():
+        path = temp_package.getFilePath()
+        if os.path.basename(path) == temp_filename:
+            return temp_package, path
+
     temp_package = sd_pkg_mgr.newUserPackage()
     staging_dir = tempdir.get_temp_dir(
         project_name, use_local_temp=True
     )
-    path = os.path.join(staging_dir, "temp_ayon_package.sbs")
+    path = os.path.join(staging_dir, temp_filename)
     path = os.path.normpath(path)
     sd_pkg_mgr.savePackageAs(temp_package, fileAbsPath=path)
 
@@ -121,10 +135,8 @@ def create_project_with_from_template(project_settings=None):
     if project_settings is None:
         project_settings = get_current_project_settings()
 
-    project_name = get_current_project_name()
-    package, package_filepath = create_tmp_package_for_template(
-        sd_pkg_mgr, project_name
-    )
+    context = get_current_context()
+    project_name = context["project_name"]
 
     resources_dir = sd_app.getPath(SDApplicationPath.DefaultResourcesDir)
     project_creation_settings = project_settings["substancedesigner"].get(
@@ -138,7 +150,7 @@ def create_project_with_from_template(project_settings=None):
     parsed_graph_names = []
     output_res_by_graphs = {}
     for project_template_setting in project_template_settings:
-        graph_name = project_template_setting["name"]
+        graph_name = project_template_setting["grpah_name"]
         if project_template_setting["template_type"] == (
             "default_substance_template"
             ):
@@ -147,34 +159,72 @@ def create_project_with_from_template(project_settings=None):
                 template_filepath = get_template_filename_from_project(
                     resources_dir, project_template
                 )
+        elif project_template_setting["template_type"] == (
+            "custom_template"
+            ):
+                custom_template = project_template_setting["custom_template"]
+                project_template = custom_template["custom_template_graph"]
+                if not project_template:
+                    log.warning("Project template not set. "
+                                "Skipping project creation.")
+                    continue
+
+                path = custom_template["custom_template_path"]
+                if not path:
+                    log.warning("Template path not filled. "
+                                "Skipping project creation.")
+                    continue
+                folder_entity, task_entity = _get_current_context_entities(
+                    context)
+                template_filepath = resolve_template_path(
+                    path, project_name, folder_entity, task_entity
+                )
+                if not os.path.exists(template_filepath):
+                    log.warning(
+                        f"Template path '{template_filepath}' "
+                        "does not exist yet.")
+                    continue
         else:
-            custom_template = project_template_setting["custom_template"]
-            project_template = custom_template["custom_template_graph"]
-            if not project_template:
-                log.warning("Project template not filled. "
+            task_type_template = project_template_setting["task_type_template"]
+            folder_entity, task_entity = _get_current_context_entities(context)
+            filter_data = {
+                "task_types": task_type_template["task_types"]
+            }
+            matched_task_type = filter_profiles(
+                project_template_settings, filter_data, logger=log)
+            if not matched_task_type:
+                log.warning("No matching task_type found. "
                             "Skipping project creation.")
                 continue
 
-            template_filepath = custom_template["custom_template_path"]
-            if not template_filepath:
-                log.warning("Template path not filled. "
-                            "Skipping project creation.")
-                continue
+            path = task_type_template["path"]
+            template_filepath = resolve_template_path(
+                path, project_name, folder_entity, task_entity)
             if not os.path.exists(template_filepath):
-                log.warning("Template path does not exist yet. "
-                            "Skipping project creation.")
+                log.warning(f"Template filepath '{template_filepath}'"
+                            " not found.")
                 continue
+
+            project_template = task_entity["name"]
 
         template_filepath = os.path.normpath(template_filepath)
+
         parsed_graph = parse_graph_from_template(
             graph_name, project_template, template_filepath)
-        parsed_graph_names.append(parsed_graph)
+        if parsed_graph is not None:
+            parsed_graph_names.append(parsed_graph)
 
         output_res_by_graphs[graph_name] = (
             project_template_setting["default_texture_resolution"]
         )
 
+    if not parsed_graph_names:
+        return
+
     # add graph with template
+    package, package_filepath = create_tmp_package_for_template(
+        sd_pkg_mgr, project_name
+    )
     add_graphs_to_package(parsed_graph_names, package_filepath)
 
     sd_pkg_mgr.unloadUserPackage(package)
@@ -251,6 +301,29 @@ def get_template_filename_from_project(resources_dir,
     return None
 
 
+def resolve_template_path(path, project_name, folder_entity, task_entity):
+    """resolve template path for Substance files
+
+    Args:
+        path (_type_): template path to resolve
+        project_name (str): project name
+        folder_entity (dict): folder entity data
+        task_name (str): task name
+
+    Returns:
+        str: resolved path for Substance template file
+    """
+    anatomy = Anatomy(project_name)
+    project_entity = ayon_api.get_project(project_name)
+    fill_data = get_template_data(
+        project_entity, folder_entity, task_entity)
+    fill_data["root"] = anatomy.roots
+    result = StringTemplate.format_template(path, fill_data)
+    if result.solved:
+        path = result.normalized()
+    return path
+
+
 def set_output_resolution_by_graphs(resolution_size_by_graphs):
     """Set output resolution per graph accordingly to Ayon settings
 
@@ -269,3 +342,23 @@ def set_output_resolution_by_graphs(resolution_size_by_graphs):
         graph.setPropertyValue(
             output_size, SDValueInt2.sNew(int2(res_size, res_size))
         )
+
+
+def _get_current_context_entities(context):
+    """Get entity data from DB
+
+    Args:
+        project_name (str): project name
+
+    Returns:
+        dict, dict: folder entity, task entity
+    """
+    project_name = context["project_name"]
+    folder_path = context["folder_path"]
+    task_name = context["task_name"]
+    folder_entity = ayon_api.get_folder_by_path(
+        project_name, folder_path)
+    task_entity = ayon_api.get_task_by_name(
+            project_name, folder_entity["id"], task_name
+        )
+    return folder_entity, task_entity

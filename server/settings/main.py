@@ -1,4 +1,8 @@
-from ayon_server.settings import BaseSettingsModel, SettingsField
+from ayon_server.settings import (
+    BaseSettingsModel,
+    SettingsField,
+    task_types_enum
+)
 from .imageio import ImageIOSettings, DEFAULT_IMAGEIO_SETTINGS
 
 
@@ -49,6 +53,7 @@ def template_type_enum():
         {"label": "Default Substance Template",
          "value": "default_substance_template"},
         {"label": "Custom Template", "value": "custom_template"},
+        {"label": "Template By Task Types", "value": "task_type_template"},
     ]
 
 
@@ -88,6 +93,16 @@ def image_format_enum():
     ]
 
 
+class TaskTypeTemplateModel(BaseSettingsModel):
+    _layout = "expanded"
+    task_types: list[str] = SettingsField(
+        default_factory=list,
+        title="Task types",
+        enum_resolver=task_types_enum
+    )
+    path: str = SettingsField("", title="Path to template")
+
+
 class CustomTemplateModel(BaseSettingsModel):
     _layout = "expanded"
     custom_template_graph: str = SettingsField(
@@ -108,7 +123,7 @@ class CustomTemplateModel(BaseSettingsModel):
 
 class ProjectTemplatesModel(BaseSettingsModel):
     _layout = "expanded"
-    name: str = SettingsField("default", title="Template Name")
+    grpah_name: str = SettingsField("default", title="Graph Name")
     default_texture_resolution: int = SettingsField(
         10, enum_resolver=document_resolution_enum,
         title="Document Resolution",
@@ -134,6 +149,11 @@ class ProjectTemplatesModel(BaseSettingsModel):
         title="Custom Template",
         description="What custom template to use for project creation",
         default_factory=CustomTemplateModel,
+    )
+    task_type_template: TaskTypeTemplateModel = SettingsField(
+        title="Template By Task Type",
+        description="Use task-type based template for project creation",
+        default_factory=TaskTypeTemplateModel,
     )
 
 class ProjectTemplateSettingModel(BaseSettingsModel):
