@@ -137,9 +137,6 @@ def create_project_with_from_template(project_settings=None):
 
     context = get_current_context()
     project_name = context["project_name"]
-    package, package_filepath = create_tmp_package_for_template(
-        sd_pkg_mgr, project_name
-    )
 
     resources_dir = sd_app.getPath(SDApplicationPath.DefaultResourcesDir)
     project_creation_settings = project_settings["substancedesigner"].get(
@@ -221,17 +218,21 @@ def create_project_with_from_template(project_settings=None):
             project_template_setting["default_texture_resolution"]
         )
 
+
     # add graph with template
     if parsed_graph_names:
+        package, package_filepath = create_tmp_package_for_template(
+            sd_pkg_mgr, project_name
+        )
         add_graphs_to_package(parsed_graph_names, package_filepath)
 
-    sd_pkg_mgr.unloadUserPackage(package)
-    sd_pkg_mgr.loadUserPackage(
-        package_filepath, updatePackages=True, reloadIfModified=True
-    )
+        sd_pkg_mgr.unloadUserPackage(package)
+        sd_pkg_mgr.loadUserPackage(
+            package_filepath, updatePackages=True, reloadIfModified=True
+        )
 
-    # set user-defined resolution by graphs
-    set_output_resolution_by_graphs(output_res_by_graphs)
+        # set user-defined resolution by graphs
+        set_output_resolution_by_graphs(output_res_by_graphs)
 
 
 def get_template_filename_from_project(resources_dir,
