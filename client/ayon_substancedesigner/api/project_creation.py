@@ -196,7 +196,7 @@ def create_project_with_from_template(project_settings=None):
             matched_task_type = filter_profiles(
                 project_template_settings, filter_data, logger=log)
             if not matched_task_type:
-                log.warning("Incorrect task types for the project. "
+                log.warning("No matching task_type found. "
                             "Skipping project creation.")
                 continue
 
