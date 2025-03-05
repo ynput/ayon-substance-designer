@@ -16,10 +16,9 @@ from sd.api.sdbasetypes import int2
 from ayon_core.pipeline import (
     Anatomy,
     tempdir,
-    get_current_project_name,
-    get_current_folder_path,
-    get_current_task_name
+    get_current_context
 )
+from ayon_core.pipeline.template_data import get_template_data
 from ayon_core.lib import StringTemplate
 from ayon_core.settings import get_current_project_settings
 from ayon_substancedesigner.api.lib import get_sd_graph_by_name
@@ -136,7 +135,8 @@ def create_project_with_from_template(project_settings=None):
     if project_settings is None:
         project_settings = get_current_project_settings()
 
-    project_name = get_current_project_name()
+    context = get_current_context()
+    project_name = context["project_name"]
     package, package_filepath = create_tmp_package_for_template(
         sd_pkg_mgr, project_name
     )
@@ -168,7 +168,7 @@ def create_project_with_from_template(project_settings=None):
                 custom_template = project_template_setting["custom_template"]
                 project_template = custom_template["custom_template_graph"]
                 if not project_template:
-                    log.warning("Project template not filled. "
+                    log.warning("Project template not set. "
                                 "Skipping project creation.")
                     continue
 
@@ -177,17 +177,17 @@ def create_project_with_from_template(project_settings=None):
                     log.warning("Template path not filled. "
                                 "Skipping project creation.")
                     continue
-                folder_entity, task_entity = get_entity_data(project_name)
+                folder_entity, task_entity = _get_current_context_entities(context)
                 template_filepath = resolve_template_path(
                     path, project_name, folder_entity, task_entity
                 )
                 if not os.path.exists(template_filepath):
-                    log.warning("Template path does not exist yet. "
-                                "Skipping project creation.")
+                    log.warning(
+                        f"Template path '{template_filepath}' does not exist yet.")
                     continue
         else:
             task_type_template = project_template_setting["task_type_template"]
-            folder_entity, task_entity = get_entity_data(project_name)
+            folder_entity, task_entity = _get_current_context_entities(context)
             task_type = task_entity["taskType"]
             if task_type not in task_type_template["task_types"]:
                 log.warning("Incorrect task types for the project. "
@@ -198,7 +198,7 @@ def create_project_with_from_template(project_settings=None):
             template_filepath = resolve_template_path(
                 path, project_name, folder_entity, task_entity)
             if not os.path.exists(template_filepath):
-                log.warning(f"{template_filepath} not found.")
+                log.warning(f"Template filepath '{template_filepath}' not found.")
                 continue
 
             project_template = task_entity["name"]
@@ -305,27 +305,10 @@ def resolve_template_path(path, project_name, folder_entity, task_entity):
         str: resolved path for Substance template file
     """
     anatomy = Anatomy(project_name)
-    fill_data = {
-        key: value
-        for key, value in os.environ.items()
-    }
-
+    project_entity = ayon_api.get_project(project_name)
+    fill_data = get_template_data(
+        project_entity, folder_entity, task_entity)
     fill_data["root"] = anatomy.roots
-    fill_data["project"] = {
-        "name": project_name,
-        "code": anatomy.project_code,
-    }
-    fill_data["folder"] = {
-        "name": folder_entity["name"],
-        "folderType": folder_entity["folderType"],
-        "type": folder_entity["folderType"]
-    }
-    fill_data["task"] = {
-        "name": task_entity["name"],
-        "taskType": task_entity["taskType"],
-        "type": task_entity["taskType"]
-    }
-
     result = StringTemplate.format_template(path, fill_data)
     if result.solved:
         path = result.normalized()
@@ -352,7 +335,7 @@ def set_output_resolution_by_graphs(resolution_size_by_graphs):
         )
 
 
-def get_entity_data(project_name):
+def _get_current_context_entities(context):
     """Get entity data from DB
 
     Args:
@@ -361,12 +344,11 @@ def get_entity_data(project_name):
     Returns:
         dict, dict: folder entity, task entity
     """
-    folder_path = get_current_folder_path()
-    task_name = get_current_task_name()
+    project_name = context["project_name"]
+    folder_path = context["folder_path"]
+    task_name = context["task_name"]
     folder_entity = ayon_api.get_folder_by_path(
-        project_name,
-        folder_path,
-        fields={"id", "name", "folderType"})
+        project_name, folder_path)
     task_entity = ayon_api.get_task_by_name(
             project_name, folder_entity["id"], task_name
         )
