@@ -177,13 +177,15 @@ def create_project_with_from_template(project_settings=None):
                     log.warning("Template path not filled. "
                                 "Skipping project creation.")
                     continue
-                folder_entity, task_entity = _get_current_context_entities(context)
+                folder_entity, task_entity = _get_current_context_entities(
+                    context)
                 template_filepath = resolve_template_path(
                     path, project_name, folder_entity, task_entity
                 )
                 if not os.path.exists(template_filepath):
                     log.warning(
-                        f"Template path '{template_filepath}' does not exist yet.")
+                        f"Template path '{template_filepath}' "
+                        "does not exist yet.")
                     continue
         else:
             task_type_template = project_template_setting["task_type_template"]
@@ -198,7 +200,8 @@ def create_project_with_from_template(project_settings=None):
             template_filepath = resolve_template_path(
                 path, project_name, folder_entity, task_entity)
             if not os.path.exists(template_filepath):
-                log.warning(f"Template filepath '{template_filepath}' not found.")
+                log.warning(f"Template filepath '{template_filepath}'"
+                            " not found.")
                 continue
 
             project_template = task_entity["name"]
