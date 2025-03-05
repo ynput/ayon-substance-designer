@@ -19,7 +19,7 @@ from ayon_core.pipeline import (
     get_current_context
 )
 from ayon_core.pipeline.template_data import get_template_data
-from ayon_core.lib import StringTemplate
+from ayon_core.lib import StringTemplate, filter_profiles
 from ayon_core.settings import get_current_project_settings
 from ayon_substancedesigner.api.lib import get_sd_graph_by_name
 
@@ -190,8 +190,12 @@ def create_project_with_from_template(project_settings=None):
         else:
             task_type_template = project_template_setting["task_type_template"]
             folder_entity, task_entity = _get_current_context_entities(context)
-            task_type = task_entity["taskType"]
-            if task_type not in task_type_template["task_types"]:
+            filter_data = {
+                "task_types": task_type_template["task_types"]
+            }
+            matched_task_type = filter_profiles(
+                project_template_settings, filter_data, logger=log)
+            if not matched_task_type:
                 log.warning("Incorrect task types for the project. "
                             "Skipping project creation.")
                 continue
