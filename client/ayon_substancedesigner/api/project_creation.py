@@ -219,20 +219,22 @@ def create_project_with_from_template(project_settings=None):
         )
 
 
+    if not parsed_graph_names:
+        return
+
     # add graph with template
-    if parsed_graph_names:
-        package, package_filepath = create_tmp_package_for_template(
-            sd_pkg_mgr, project_name
-        )
-        add_graphs_to_package(parsed_graph_names, package_filepath)
+    package, package_filepath = create_tmp_package_for_template(
+        sd_pkg_mgr, project_name
+    )
+    add_graphs_to_package(parsed_graph_names, package_filepath)
 
-        sd_pkg_mgr.unloadUserPackage(package)
-        sd_pkg_mgr.loadUserPackage(
-            package_filepath, updatePackages=True, reloadIfModified=True
-        )
+    sd_pkg_mgr.unloadUserPackage(package)
+    sd_pkg_mgr.loadUserPackage(
+        package_filepath, updatePackages=True, reloadIfModified=True
+    )
 
-        # set user-defined resolution by graphs
-        set_output_resolution_by_graphs(output_res_by_graphs)
+    # set user-defined resolution by graphs
+    set_output_resolution_by_graphs(output_res_by_graphs)
 
 
 def get_template_filename_from_project(resources_dir,
