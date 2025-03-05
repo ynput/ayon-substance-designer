@@ -123,7 +123,7 @@ class CustomTemplateModel(BaseSettingsModel):
 
 class ProjectTemplatesModel(BaseSettingsModel):
     _layout = "expanded"
-    name: str = SettingsField("default", title="Template Name")
+    grpah_name: str = SettingsField("default", title="Graph Name")
     default_texture_resolution: int = SettingsField(
         10, enum_resolver=document_resolution_enum,
         title="Document Resolution",

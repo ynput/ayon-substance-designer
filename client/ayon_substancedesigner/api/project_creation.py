@@ -153,7 +153,7 @@ def create_project_with_from_template(project_settings=None):
     parsed_graph_names = []
     output_res_by_graphs = {}
     for project_template_setting in project_template_settings:
-        graph_name = project_template_setting["name"]
+        graph_name = project_template_setting["grpah_name"]
         if project_template_setting["template_type"] == (
             "default_substance_template"
             ):
