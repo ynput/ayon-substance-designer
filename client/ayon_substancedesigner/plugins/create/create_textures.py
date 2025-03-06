@@ -24,14 +24,6 @@ class CreateTextures(TextureCreator):
     review = False
     exportFileFormat = "png"
 
-    def apply_settings(self, project_settings):
-        texture_settings = project_settings["substancedesigner"].get(
-            "create_texture", {})
-        if texture_settings:
-            self.review = texture_settings.get("review", False)
-            self.exportFileFormat = texture_settings.get(
-                "exportFileFormat", "png")
-
     def get_dynamic_data(
         self,
         project_name,
