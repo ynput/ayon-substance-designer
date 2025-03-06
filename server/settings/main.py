@@ -171,7 +171,7 @@ class CreateTextureSettings(BaseSettingsModel):
 
 
 class CreatePluginsModel(BaseSettingsModel):
-    create_texture: CreateTextureSettings = SettingsField(
+    CreateTextures: CreateTextureSettings = SettingsField(
             default_factory=CreateTextureSettings,
             title="Create Textures"
         )
@@ -197,7 +197,7 @@ DEFAULT_SD_SETTINGS = {
         "project_templates": []
     },
     "create": {
-        "create_texture": {
+        "CreateTextures": {
             "review": False,
             "exportFileFormat": "png"
         },
