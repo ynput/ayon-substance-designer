@@ -96,6 +96,9 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
 
     def open_workfile(self, filepath):
         pkg_mgr = package_manager()
+        for user_pkg in pkg_mgr.getUserPackages():
+            log.warning("Unloading existing workfile...")
+            pkg_mgr.unloadUserPackage(user_pkg)
         pkg_mgr.loadUserPackage(
             filepath, updatePackages=False, reloadIfModified=False
         )
