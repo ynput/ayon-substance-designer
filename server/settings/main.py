@@ -170,6 +170,13 @@ class CreateTextureSettings(BaseSettingsModel):
         title="Image Output File Type")
 
 
+class CreatePluginsModel(BaseSettingsModel):
+    CreateTextures: CreateTextureSettings = SettingsField(
+        default_factory=CreateTextureSettings,
+        title="Create Textures"
+    )
+
+
 class SubstanceDesignerSettings(BaseSettingsModel):
     imageio: ImageIOSettings = SettingsField(
         default_factory=ImageIOSettings,
@@ -179,19 +186,20 @@ class SubstanceDesignerSettings(BaseSettingsModel):
         default_factory=ProjectTemplateSettingModel,
         title="Project Creation"
     )
-    create_texture: CreateTextureSettings = SettingsField(
-        default_factory=CreateTextureSettings,
-        title="Create Textures"
+    create: CreatePluginsModel = SettingsField(
+        default_factory=CreatePluginsModel,
+        title="Creator Plugins"
     )
-
 
 DEFAULT_SD_SETTINGS = {
     "imageio": DEFAULT_IMAGEIO_SETTINGS,
     "project_creation": {
         "project_templates": []
     },
-    "create_texture": {
-        "review": False,
-        "exportFileFormat": "png"
-    },
+    "create": {
+        "CreateTextures": {
+            "review": False,
+            "exportFileFormat": "png"
+        },
+    }
 }
