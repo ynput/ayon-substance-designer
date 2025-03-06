@@ -11,8 +11,12 @@ from ayon_substancedesigner.api.pipeline import (
 from .lib import get_current_graph_name
 
 
+SETTINGS_CATEGORY = "substancedesigner"
+
+
 class TextureCreator(Creator):
     """Create a texture set."""
+    settings_category = SETTINGS_CATEGORY
 
     def create(self, product_name, instance_data, pre_create_data):
         current_graph_name = get_current_graph_name()
@@ -61,22 +65,3 @@ class TextureCreator(Creator):
         instance = CreatedInstance.from_existing(data, self)
         self.create_context.creator_adds_instance(instance)
         return instance
-
-    def apply_settings(self, project_settings):
-        """Method called on initialization of plugin to apply settings."""
-
-        # Apply Creator Settings
-        settings_name = self.settings_name
-        if settings_name is None:
-            settings_name = self.__class__.__name__
-
-        settings = project_settings["substancedesigner"]["create"]
-        settings = settings.get(settings_name)
-        if settings is None:
-            self.log.debug(
-                "No settings found for {}".format(self.__class__.__name__)
-            )
-            return
-
-        for key, value in settings.items():
-            setattr(self, key, value)
