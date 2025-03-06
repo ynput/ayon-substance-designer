@@ -11,12 +11,9 @@ from ayon_substancedesigner.api.pipeline import (
 from .lib import get_current_graph_name
 
 
-SETTINGS_CATEGORY = "substancedesigner"
-
-
 class TextureCreator(Creator):
     """Create a texture set."""
-    settings_category = SETTINGS_CATEGORY
+    settings_category = "substancedesigner"
 
     def create(self, product_name, instance_data, pre_create_data):
         current_graph_name = get_current_graph_name()
