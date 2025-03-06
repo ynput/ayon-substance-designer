@@ -172,9 +172,9 @@ class CreateTextureSettings(BaseSettingsModel):
 
 class CreatePluginsModel(BaseSettingsModel):
     CreateTextures: CreateTextureSettings = SettingsField(
-            default_factory=CreateTextureSettings,
-            title="Create Textures"
-        )
+        default_factory=CreateTextureSettings,
+        title="Create Textures"
+    )
 
 
 class SubstanceDesignerSettings(BaseSettingsModel):
