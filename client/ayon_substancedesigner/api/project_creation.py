@@ -97,8 +97,10 @@ def add_dependencies_from_template(dependencies, temp_package_filepath):
             unsaved_root.remove(dependencies_element)
 
         new_dependencies_content = etree.Element('dependencies')
-        new_dependencies_content.extend(dependencies)  # Append the copied <graph> element
-        unsaved_root.append(new_dependencies_content)   # Add the new <content> to the root
+        # Append the copied <dependency> element
+        new_dependencies_content.extend(dependencies)
+        # Add the new <dependencies> to the root
+        unsaved_root.append(new_dependencies_content)
     # Save the modified content for Substance file
     unsaved_tree.write(
         temp_package_filepath,
