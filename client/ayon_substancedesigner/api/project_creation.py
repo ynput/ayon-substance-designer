@@ -62,6 +62,53 @@ def parse_graph_from_template(graph_name, project_template, template_filepath):
     return graph_element
 
 
+def parse_dependencies_from_template(template_filepath):
+    """Parse dependencies from Substance template file
+
+    Args:
+        template_filepath (str): Substance template filepath
+    """
+    dependencies = []
+    # Parse the template substance file
+    substance_tree = etree.parse(template_filepath)
+    substance_root = substance_tree.getroot()
+
+    for element in substance_root.find('.//dependencies'):
+        dependencies.append(element)
+    return dependencies
+
+
+def add_dependencies_from_template(dependencies, temp_package_filepath):
+    """Add dependencies to the temp package file
+
+    Args:
+        dependencies (list): all dependencies
+        temp_package_filepath (str): temp package filepath
+    """
+    # Parse the temp package file
+    unsaved_tree = etree.parse(temp_package_filepath)
+    unsaved_root = unsaved_tree.getroot()
+
+    if dependencies:
+        # Remove the existing <dependencies/> element if it exists
+        dependencies_element = unsaved_root.find('dependencies')
+        if dependencies_element is not None:
+            # Find the <dependencies> element in Unsaved_Package.xml
+            unsaved_root.remove(dependencies_element)
+
+        new_dependencies_content = etree.Element('dependencies')
+        new_dependencies_content.extend(dependencies)  # Append the copied <graph> element
+        unsaved_root.append(new_dependencies_content)   # Add the new <content> to the root
+    # Save the modified content for Substance file
+    unsaved_tree.write(
+        temp_package_filepath,
+        encoding='utf-8',
+        xml_declaration=True
+    )
+
+    log.warning("All dependencies are copied and pasted successfully!")
+
+
 def add_graphs_to_package(parsed_graph_names, temp_package_filepath):
     """Add graphs to the temp package
 
@@ -149,6 +196,7 @@ def create_project_with_from_template(project_settings=None):
 
     parsed_graph_names = []
     output_res_by_graphs = {}
+    parsed_dependencies = []
     for project_template_setting in project_template_settings:
         graph_name = project_template_setting["grpah_name"]
         if project_template_setting["template_type"] == (
@@ -217,6 +265,9 @@ def create_project_with_from_template(project_settings=None):
         output_res_by_graphs[graph_name] = (
             project_template_setting["default_texture_resolution"]
         )
+        parsed_dependency_paths = parse_dependencies_from_template(
+            template_filepath)
+        parsed_dependencies.extend(parsed_dependency_paths)
 
     if not parsed_graph_names:
         return
@@ -225,6 +276,8 @@ def create_project_with_from_template(project_settings=None):
     package, package_filepath = create_tmp_package_for_template(
         sd_pkg_mgr, project_name
     )
+
+    add_dependencies_from_template(parsed_dependencies, package_filepath)
     add_graphs_to_package(parsed_graph_names, package_filepath)
 
     sd_pkg_mgr.unloadUserPackage(package)
