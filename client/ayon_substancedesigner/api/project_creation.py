@@ -269,7 +269,9 @@ def create_project_with_from_template(project_settings=None):
         sd_pkg_mgr, project_name
     )
 
-    add_graphs_to_package(parsed_graph_names, parsed_dependencies, package_filepath)
+    add_graphs_to_package(
+        parsed_graph_names, parsed_dependencies, package_filepath
+    )
 
     sd_pkg_mgr.unloadUserPackage(package)
     sd_pkg_mgr.loadUserPackage(
