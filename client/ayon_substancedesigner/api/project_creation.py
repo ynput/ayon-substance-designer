@@ -130,7 +130,7 @@ def add_graphs_to_package(
         xml_declaration=True
     )
 
-    log.warning("All graphs are copied and pasted successfully!")
+    log.info("All graphs are copied and pasted successfully!")
 
 
 def create_tmp_package_for_template(sd_pkg_mgr, project_name):
