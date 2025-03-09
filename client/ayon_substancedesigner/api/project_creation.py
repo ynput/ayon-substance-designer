@@ -34,6 +34,9 @@ def parse_graph_from_template(graph_name, project_template, template_filepath):
         project_template (str): project template name
         template_filepath (str): Substance template filepath
 
+    Returns:
+        List[xml.etree.ElementTree.Element]: graph(s) from the select template
+
     """
     # Parse the template substance file
     substance_tree = etree.parse(template_filepath)
@@ -67,6 +70,10 @@ def parse_dependencies_from_template(template_filepath):
 
     Args:
         template_filepath (str): Substance template filepath
+
+    Returns:
+        List[xml.etree.ElementTree.Element]: dependencies from
+            the select template
     """
     dependencies = []
     # Parse the template substance file
@@ -78,44 +85,13 @@ def parse_dependencies_from_template(template_filepath):
     return dependencies
 
 
-def add_dependencies_from_template(dependencies, temp_package_filepath):
-    """Add dependencies to the temp package file
-
-    Args:
-        dependencies (list): all dependencies
-        temp_package_filepath (str): temp package filepath
-    """
-    # Parse the temp package file
-    unsaved_tree = etree.parse(temp_package_filepath)
-    unsaved_root = unsaved_tree.getroot()
-
-    if dependencies:
-        # Remove the existing <dependencies/> element if it exists
-        dependencies_element = unsaved_root.find('dependencies')
-        if dependencies_element is not None:
-            # Find the <dependencies> element in Unsaved_Package.xml
-            unsaved_root.remove(dependencies_element)
-
-        new_dependencies_content = etree.Element('dependencies')
-        # Append the copied <dependency> element
-        new_dependencies_content.extend(dependencies)
-        # Add the new <dependencies> to the root
-        unsaved_root.append(new_dependencies_content)
-    # Save the modified content for Substance file
-    unsaved_tree.write(
-        temp_package_filepath,
-        encoding='utf-8',
-        xml_declaration=True
-    )
-
-    log.warning("All dependencies are copied and pasted successfully!")
-
-
-def add_graphs_to_package(parsed_graph_names, temp_package_filepath):
+def add_graphs_to_package(
+        parsed_graph_names, parsed_dependencies, temp_package_filepath):
     """Add graphs to the temp package
 
     Args:
         parsed_graph_names (list): parsed graph names
+        parsed_dependencies (list): parsed dependencies
         temp_package_filepath (str): temp package filepath
 
     """
@@ -133,6 +109,20 @@ def add_graphs_to_package(parsed_graph_names, temp_package_filepath):
     new_content = etree.Element('content')
     new_content.extend(parsed_graph_names)  # Append the copied <graph> element
     unsaved_root.append(new_content)   # Add the new <content> to the root
+
+    if parsed_dependencies:
+        # Remove the existing <dependencies/> element if it exists
+        dependencies_element = unsaved_root.find('dependencies')
+        if dependencies_element is not None:
+            # Find the <dependencies> element in Unsaved_Package.xml
+            unsaved_root.remove(dependencies_element)
+
+        new_dependencies_content = etree.Element('dependencies')
+        # Append the copied <dependency> element
+        new_dependencies_content.extend(parsed_dependencies)
+        # Add the new <dependencies> to the root
+        unsaved_root.append(new_dependencies_content)
+
     # Save the modified content for Substance file
     unsaved_tree.write(
         temp_package_filepath,
@@ -279,8 +269,7 @@ def create_project_with_from_template(project_settings=None):
         sd_pkg_mgr, project_name
     )
 
-    add_dependencies_from_template(parsed_dependencies, package_filepath)
-    add_graphs_to_package(parsed_graph_names, package_filepath)
+    add_graphs_to_package(parsed_graph_names, parsed_dependencies, package_filepath)
 
     sd_pkg_mgr.unloadUserPackage(package)
     sd_pkg_mgr.loadUserPackage(
