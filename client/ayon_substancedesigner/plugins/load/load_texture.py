@@ -108,7 +108,7 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
         if not has_resource_file(current_package):
             resource_folder = sd.api.sdresourcefolder.SDResourceFolder.sNew(
                 current_package)
-            resource_folder.setIdentifier(f"{project_name}_rosources")
+            resource_folder.setIdentifier(f"{project_name}_resources")
         else:
             resource_folder = get_resource_folder(current_package)
         bitmap_resource = sd.api.sdresourcebitmap.SDResourceBitmap.sNewFromFile(                # noqa
