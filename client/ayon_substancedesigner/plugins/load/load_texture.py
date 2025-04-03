@@ -100,6 +100,18 @@ class SubstanceLoadProjectImage(load.LoaderPlugin):
 
     def import_texture(self, filepath, context,
                        current_package, resource_embed_method):
+        """Import textures as Substance Designer Package
+
+        Args:
+            filepath (str): filepath
+            context (dict): context
+            current_package (sd.api.sdpackage.SDPackage): current Substance
+                package
+            resource_embed_method (str): Resource emebed method
+
+        Returns:
+            str: Map identifier
+        """
         project_name = context["project"]["name"]
         filename = os.path.splitext(os.path.basename(filepath))[0]
         # identifier would convert "." to "_", this makes sure

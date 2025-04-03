@@ -215,8 +215,8 @@ def imprint(current_package, name, namespace, context,
         namespace (str): Namespace under which to host container
         context (dict): Asset information
         loader (load.LoaderPlugin): loader instance used to produce container.
-        identifier(str): SDResource identifier
-        options(dict): options
+        identifier (str): SDResource identifier
+        options (dict): options
 
     Returns:
         None
