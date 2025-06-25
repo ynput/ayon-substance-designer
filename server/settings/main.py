@@ -136,7 +136,7 @@ class ProjectTemplatesModel(BaseSettingsModel):
         description=("Choose either default substance templates "
                      "or custom template for project creation"),
         enum_resolver=template_type_enum,
-        conditionalEnum=True,
+        conditional_enum=True,
     )
 
     default_substance_template: str = SettingsField(
