@@ -12,6 +12,7 @@ version = "0.1.1+dev"
 # - do not specify if there is no client code
 client_dir = "ayon_substancedesigner"
 project_can_override_addon_version = True
+app_host_name = "substancedesigner"
 
 # Version compatibility with AYON server
 ayon_server_version = ">=1.1.2"
