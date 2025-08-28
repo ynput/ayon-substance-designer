@@ -11,6 +11,7 @@ version = "0.1.1+dev"
 # Name of client code directory imported in AYON launcher
 # - do not specify if there is no client code
 client_dir = "ayon_substancedesigner"
+project_can_override_addon_version = True
 app_host_name = "substancedesigner"
 
 # Version compatibility with AYON server
