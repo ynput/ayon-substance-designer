@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating textures."""
-import inspect
 from ayon_core.pipeline import CreatedInstance, Creator, CreatorError
 
 from ayon_substancedesigner.api.pipeline import (
