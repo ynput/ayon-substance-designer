@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Creator plugin for creating workfiles."""
-import inspect
 from ayon_core.pipeline import CreatedInstance, AutoCreator
 
 from ayon_substancedesigner.api.pipeline import (
