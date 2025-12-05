@@ -15,6 +15,7 @@ class CreateWorkfile(AutoCreator):
     identifier = "io.ayon.creators.substancedesigner.workfile"
     label = "Workfile"
     product_type = "workfile"
+    product_base_type = "workfile"
     icon = "document"
 
     default_variant = "Main"

@@ -17,6 +17,7 @@ class CreateTextures(TextureCreator):
     identifier = "io.ayon.creators.substancedesigner.textureset"
     label = "Textures"
     product_type = "textureSet"
+    product_base_type = "textureSet"
     icon = "picture-o"
 
     default_variant = "Main"
