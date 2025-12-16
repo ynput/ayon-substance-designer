@@ -15,6 +15,7 @@ class CreateWorkfile(AutoCreator):
     identifier = "io.ayon.creators.substancedesigner.workfile"
     label = "Workfile"
     product_type = "workfile"
+    product_base_type = "workfile"
     icon = "document"
 
     default_variant = "Main"
@@ -107,7 +108,10 @@ class CreateWorkfile(AutoCreator):
 
     def create_instance_in_context(self, product_name, data):
         instance = CreatedInstance(
-            self.product_type, product_name, data, self
+            product_type=self.product_type,
+            product_name=product_name,
+            data=data,
+            creator=self
         )
         self.create_context.creator_adds_instance(instance)
         return instance

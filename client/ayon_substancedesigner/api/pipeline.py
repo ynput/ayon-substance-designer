@@ -90,9 +90,13 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
     def save_workfile(self, dst_path=None):
         pkg_mgr = package_manager()
         package = get_package_from_current_graph()
-        if package:
-            pkg_mgr.savePackageAs(package, fileAbsPath=dst_path)
-            return dst_path
+        if not package:
+            raise RuntimeError(
+                "No current graph found in the package."
+            )
+
+        pkg_mgr.savePackageAs(package, fileAbsPath=dst_path)
+        return dst_path
 
     def open_workfile(self, filepath):
         pkg_mgr = package_manager()
