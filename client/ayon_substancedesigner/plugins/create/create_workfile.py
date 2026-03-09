@@ -61,6 +61,7 @@ class CreateWorkfile(AutoCreator):
                 task_entity=task_entity,
                 variant=variant,
                 host_name=host_name,
+                product_type=self.product_type,
             )
             data = {
                 "folderPath": folder_path,
@@ -81,6 +82,7 @@ class CreateWorkfile(AutoCreator):
                 task_entity=task_entity,
                 variant=variant,
                 host_name=host_name,
+                product_type=self.product_type,
             )
             current_instance["folderPath"] = folder_path
             current_instance["task"] = task_name
@@ -113,6 +115,7 @@ class CreateWorkfile(AutoCreator):
 
     def create_instance_in_context(self, product_name, data):
         instance = CreatedInstance(
+            product_base_type=self.product_base_type,
             product_type=self.product_type,
             product_name=product_name,
             data=data,
