@@ -163,17 +163,51 @@ class ProjectTemplateSettingModel(BaseSettingsModel):
     )
 
 
+class ProductTypeItemModel(BaseSettingsModel):
+    _layout = "compact"
+    product_type: str = SettingsField(
+        title="Product type",
+        description="Product type name",
+    )
+    label: str = SettingsField(
+        "",
+        title="Label",
+        description="Label to display in UI for the product type",
+    )
+
+
 class CreateTextureSettings(BaseSettingsModel):
     review : bool = SettingsField(False, title="Review")
     exportFileFormat: str = SettingsField(
         enum_resolver=image_format_enum,
         title="Image Output File Type")
+    product_type_items: list[ProductTypeItemModel] = SettingsField(
+        default_factory=list,
+        title="Product type items",
+        description=(
+            "Optional list of product types that this plugin can create."
+        )
+    )
+
+
+class CreateSBSARModel(BaseSettingsModel):
+    product_type_items: list[ProductTypeItemModel] = SettingsField(
+        default_factory=list,
+        title="Product type items",
+        description=(
+            "Optional list of product types that this plugin can create."
+        )
+    )
 
 
 class CreatePluginsModel(BaseSettingsModel):
     CreateTextures: CreateTextureSettings = SettingsField(
         default_factory=CreateTextureSettings,
         title="Create Textures"
+    )
+    CreateSbsar: CreateSBSARModel = SettingsField(
+        default_factory=CreateSBSARModel,
+        title="Create SBSAR",
     )
 
 
@@ -190,6 +224,7 @@ class SubstanceDesignerSettings(BaseSettingsModel):
         default_factory=CreatePluginsModel,
         title="Creator Plugins"
     )
+
 
 DEFAULT_SD_SETTINGS = {
     "imageio": DEFAULT_IMAGEIO_SETTINGS,

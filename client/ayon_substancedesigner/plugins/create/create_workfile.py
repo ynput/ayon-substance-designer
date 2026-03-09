@@ -14,8 +14,8 @@ class CreateWorkfile(AutoCreator):
     """Workfile auto-creator."""
     identifier = "io.ayon.creators.substancedesigner.workfile"
     label = "Workfile"
-    product_type = "workfile"
     product_base_type = "workfile"
+    product_type = product_base_type
     icon = "document"
 
     default_variant = "Main"
@@ -26,10 +26,6 @@ class CreateWorkfile(AutoCreator):
         if not current_package:
             return
         variant = self.default_variant
-        project_name = self.project_name
-        folder_path = self.create_context.get_current_folder_path()
-        task_name = self.create_context.get_current_task_name()
-        host_name = self.create_context.host_name
 
         # Workfile instance should always exist and must only exist once.
         # As such we'll first check if it already exists and is collected.
@@ -61,6 +57,7 @@ class CreateWorkfile(AutoCreator):
                 task_entity=task_entity,
                 variant=variant,
                 host_name=host_name,
+                product_type=self.product_type,
             )
             data = {
                 "folderPath": folder_path,
@@ -81,6 +78,7 @@ class CreateWorkfile(AutoCreator):
                 task_entity=task_entity,
                 variant=variant,
                 host_name=host_name,
+                product_type=self.product_type,
             )
             current_instance["folderPath"] = folder_path
             current_instance["task"] = task_name
@@ -93,8 +91,13 @@ class CreateWorkfile(AutoCreator):
 
     def collect_instances(self):
         for instance in get_instances():
-            if (instance.get("creator_identifier") == self.identifier or
-                    instance.get("productType") == self.product_type):
+            product_base_type = instance.get("productBaseType")
+            if not product_base_type:
+                product_base_type = instance.get("productType")
+            if (
+                instance.get("creator_identifier") == self.identifier
+                or product_base_type == self.product_base_type
+            ):
                 self.create_instance_in_context_from_existing(instance)
 
     def update_instances(self, update_list):
@@ -108,6 +111,7 @@ class CreateWorkfile(AutoCreator):
 
     def create_instance_in_context(self, product_name, data):
         instance = CreatedInstance(
+            product_base_type=self.product_base_type,
             product_type=self.product_type,
             product_name=product_name,
             data=data,

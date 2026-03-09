@@ -16,12 +16,11 @@ class CreateTextures(TextureCreator):
     """Create a texture set."""
     identifier = "io.ayon.creators.substancedesigner.textureset"
     label = "Textures"
-    product_type = "textureSet"
     product_base_type = "textureSet"
+    product_type = product_base_type
     icon = "picture-o"
 
     default_variant = "Main"
-    settings_category = "substancedesigner"
     review = False
     exportFileFormat = "png"
 

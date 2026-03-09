@@ -5,9 +5,8 @@ class CreateSbsar(TextureCreator):
     """Create a texture set."""
     identifier = "io.ayon.creators.substancedesigner.sbsar"
     label = "Sbsar"
-    product_type = "sbsar"
     product_base_type = "sbsar"
+    product_type = product_base_type
     icon = "picture-o"
 
     default_variant = "Main"
-    settings_category = "substancedesigner"

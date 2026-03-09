@@ -82,11 +82,17 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
             "ext": ext.lstrip("."),
             "files": f"{image_product_name}.{ext}",
         }
+
         # Set up the representation for thumbnail generation
         representation["tags"] = ["review"]
         representation["stagingDir"] = staging_dir
         # Clone the instance
-        product_type = "image"
+        product_base_type = "image"
+
+        product_type = instance.data["productType"]
+        if product_type == instance.data["productBaseType"]:
+            product_type = product_base_type
+
         image_instance = context.create_instance(image_product_name)
         image_instance[:] = instance[:]
         image_instance.data.update(copy.deepcopy(dict(instance.data)))
@@ -94,9 +100,9 @@ class CollectTextureSet(pyblish.api.InstancePlugin):
         image_instance.data["label"] = image_product_name
         image_instance.data["productName"] = image_product_name
         image_instance.data["productType"] = product_type
-        image_instance.data["productBaseType"] = product_type
-        image_instance.data["family"] = product_type
-        image_instance.data["families"] = [product_type, "textures"]
+        image_instance.data["productBaseType"] = product_base_type
+        image_instance.data["family"] = product_base_type
+        image_instance.data["families"] = [product_base_type, "textures"]
         if instance.data["creator_attributes"].get("review"):
             image_instance.data["families"].append("review")
 
