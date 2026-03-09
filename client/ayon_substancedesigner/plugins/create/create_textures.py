@@ -21,7 +21,6 @@ class CreateTextures(TextureCreator):
     icon = "picture-o"
 
     default_variant = "Main"
-    settings_category = "substancedesigner"
     review = False
     exportFileFormat = "png"
 

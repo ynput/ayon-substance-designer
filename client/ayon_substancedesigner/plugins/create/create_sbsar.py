@@ -10,4 +10,3 @@ class CreateSbsar(TextureCreator):
     icon = "picture-o"
 
     default_variant = "Main"
-    settings_category = "substancedesigner"
