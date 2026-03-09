@@ -26,7 +26,8 @@ def get_resource_folder(current_package):
 class SubstanceLoadProjectImage(load.LoaderPlugin):
     """Load Texture for project"""
 
-    product_types = {"image", "textures"}
+    product_base_types = {"image", "textures"}
+    product_types = product_base_types
     representations = {"*"}
 
     label = "Load Texture"
