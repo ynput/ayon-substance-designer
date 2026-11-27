@@ -174,11 +174,6 @@ class SubstanceDesignerHost(HostBase, IWorkfileHost, ILoadHost, IPublishHost):
             lambda: host_tools.show_scene_inventory(parent=parent)
         )
 
-        action = menu.addAction("Library...")
-        action.triggered.connect(
-            lambda: host_tools.show_library_loader(parent=parent)
-        )
-
         menu.addSeparator()
 
         if project_settings["core"]["tools"]["ayon_menu"].get(
